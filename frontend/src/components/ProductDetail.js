@@ -1,11 +1,12 @@
 // frontend/src/components/ProductDetail.js
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom'; 
+import { useParams, useNavigate, Link } from 'react-router-dom'; 
 import axios from 'axios';
 import './ProductDetail.css';
 
 function ProductDetail() {
   const { id } = useParams();  // Get product id from URL
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [similarGames, setSimilarGames] = useState([]);
@@ -31,7 +32,7 @@ function ProductDetail() {
     if (id) fetchProduct();
   }, [id]);
 
-  // Once product is loaded, fetch all products and filter for similar games.
+  // Once product is loaded, fetch similar games.
   useEffect(() => {
     async function fetchSimilar() {
       if (!product) return;
@@ -43,7 +44,6 @@ function ProductDetail() {
           product.categories &&
           product.categories.some(cat => p.categories.includes(cat))
         );
-        // Limit to top 4 similar games
         setSimilarGames(similar.slice(0, 4));
       } catch (error) {
         console.error("Error fetching similar games:", error);
@@ -80,7 +80,7 @@ function ProductDetail() {
     );
   };
 
-  // Sort comments based on sortOrder (currently only "mostRecent" is implemented)
+  // Sort comments (only "mostRecent" implemented here)
   const sortedComments = [...comments].sort((a, b) => {
     if (sortOrder === "mostRecent") {
       return new Date(b.timestamp) - new Date(a.timestamp);
@@ -97,6 +97,9 @@ function ProductDetail() {
 
   return (
     <div className="product-detail">
+      <div className="back-button">
+        <button onClick={() => navigate(-1)}>&larr; Back</button>
+      </div>
       <div className="hero-section">
         <img 
           src={product.image.startsWith('/') ? `http://localhost:5000${product.image}` : product.image} 
@@ -133,7 +136,7 @@ function ProductDetail() {
             <strong>Ratings:</strong> {product.ratings ? `${product.ratings} / 5` : "No ratings yet"}
           </div>
         </div>
-        {/* New Minimum Requirements Section */}
+        {/* Minimum System Requirements Section */}
         {product.minRequirements && (
           <div className="min-requirements">
             <h2>Minimum System Requirements</h2>
@@ -248,14 +251,6 @@ function ProductDetail() {
       </div>
     </div>
   );
-}
-
-// Comments helper functions defined within component scope.
-function handleLikeComment(commentId) {
-  // Implementation here if needed.
-}
-function handleDeleteComment(commentId) {
-  // Implementation here if needed.
 }
 
 export default ProductDetail;
