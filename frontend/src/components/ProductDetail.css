@@ -1,0 +1,304 @@
+/* ProductDetail.css */
+.product-detail {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Roboto', sans-serif;
+  background-color: #fff;
+}
+
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.8);
+  transition: filter 0.3s ease;
+}
+
+.hero-image:hover {
+  filter: brightness(1);
+}
+
+.info-section {
+  padding: 20px;
+}
+
+.product-title {
+  font-size: 2.5rem;
+  color: #3498db;
+  margin-bottom: 10px;
+}
+
+.product-description {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.product-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  flex: 1 1 200px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.buy-now-btn,
+.add-to-cart-btn,
+.add-to-wishlist-btn {
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Buy Now button styling */
+.buy-now-btn {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.buy-now-btn:hover {
+  background-color: #c0392b;
+}
+
+/* Add to Wishlist button styling */
+.add-to-wishlist-btn {
+  background-color: #f1c40f;
+  color: #fff;
+}
+
+.add-to-wishlist-btn:hover {
+  background-color: #d4ac0d;
+}
+
+/* Add to Cart button styling */
+.add-to-cart-btn {
+  background-color: #3498db;
+  color: #fff;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Trailer Section */
+.trailer-section {
+  margin-top: 50px;
+  text-align: left;
+}
+
+.trailer-section h2 {
+  font-size: 2rem;
+  color: #3498db;
+  margin-bottom: 20px;
+}
+
+.trailer-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.trailer-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Recommendations Section */
+.recommendations-section {
+  margin-top: 50px;
+  text-align: left;
+}
+
+.recommendations-section h2 {
+  font-size: 2rem;
+  color: #3498db;
+  margin-bottom: 20px;
+}
+
+.recommendations-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+/* Recommendation card styling */
+.recommendation-card {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 15px;
+  width: 284px;
+  text-align: center;
+  transition: transform 0.2s ease-in-out;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-5px);
+}
+
+.recommendation-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.recommendation-card h3 {
+  font-size: 1.3rem;
+  color: #3498db;
+  margin: 10px 0;
+}
+
+.recommendation-card .price {
+  font-size: 1.1rem;
+  color: #2980b9;
+  margin: 8px 0;
+}
+
+/* Comments Section */
+.comments-section {
+  margin-top: 50px;
+  text-align: left;
+}
+
+.comments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.comments-header h2 {
+  font-size: 2rem;
+  color: #3498db;
+  margin: 0;
+}
+
+.sort-options {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sort-options label {
+  font-size: 1rem;
+  color: #333;
+}
+
+.sort-options select {
+  padding: 5px 10px;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.new-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.new-comment textarea {
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.new-comment button {
+  align-self: flex-end;
+  padding: 8px 16px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.new-comment button:hover {
+  background-color: #2980b9;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.comment-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #fafafa;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.comment-text {
+  font-size: 1rem;
+  color: #555;
+}
+
+.comment-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.comment-actions button {
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #3498db;
+  color: #fff;
+  transition: background-color 0.2s;
+}
+
+.comment-actions button:hover {
+  background-color: #2980b9;
+}

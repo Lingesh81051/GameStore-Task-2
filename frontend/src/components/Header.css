@@ -1,0 +1,118 @@
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Left Section */
+.header-left .logo a {
+  font-size: 2rem;
+  font-weight: bold;
+  text-decoration: none;
+  color: #3498db;
+}
+.header-left .logo i {
+  margin-right: 8px;
+}
+
+/* Center Section: search bar (only on Home) */
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.search-form {
+  display: flex;
+  max-width: 600px;
+  width: 100%;
+}
+.search-form input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-right: none;
+  font-size: 1rem;
+}
+.search-form button {
+  padding: 10px 16px;
+  border: 1px solid #3498db;
+  background-color: #3498db;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.search-form button:hover {
+  background-color: #2980b9;
+}
+
+/* Right Section: Navigation */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: flex-end;
+}
+.header-right a {
+  text-decoration: none;
+  font-size: 1rem;
+  color: #3498db;
+  transition: color 0.2s;
+}
+.header-right a:hover {
+  color: #2980b9;
+}
+
+/* Dropdown for Home */
+.dropdown {
+  position: relative;
+}
+.dropdown-trigger {
+  font-size: 1rem;
+  color: #3498db;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: color 0.2s;
+}
+.dropdown-trigger:hover {
+  color: #2980b9;
+}
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  z-index: 100;
+  min-width: 150px;
+}
+.dropdown-menu a {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #3498db;
+  transition: background-color 0.2s;
+}
+.dropdown-menu a:hover {
+  background-color: #f0f4f8;
+}
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* Avatar icon styling */
+.avatar-icon i {
+  font-size: 2rem;
+  color: #3498db;
+  transition: color 0.2s;
+}
+.avatar-icon i:hover {
+  color: #2980b9;
+}
