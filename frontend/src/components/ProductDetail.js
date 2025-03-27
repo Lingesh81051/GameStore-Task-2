@@ -133,6 +133,20 @@ function ProductDetail() {
             <strong>Ratings:</strong> {product.ratings ? `${product.ratings} / 5` : "No ratings yet"}
           </div>
         </div>
+        {/* New Minimum Requirements Section */}
+        {product.minRequirements && (
+          <div className="min-requirements">
+            <h2>Minimum System Requirements</h2>
+            <p><strong>OS:</strong> {product.minRequirements.os}</p>
+            <p><strong>Processor:</strong> {product.minRequirements.processor}</p>
+            <p><strong>RAM:</strong> {product.minRequirements.ram}</p>
+            <p><strong>Hard Drive:</strong> {product.minRequirements.hardDrive}</p>
+            <p><strong>Video Card:</strong> {product.minRequirements.videoCard}</p>
+            <p><strong>Sound Card:</strong> {product.minRequirements.soundCard}</p>
+            <p><strong>DirectX:</strong> {product.minRequirements.directX}</p>
+            <p><strong>Keyboard and Mouse:</strong> {product.minRequirements.peripherals}</p>
+          </div>
+        )}
         <div className="cta-buttons">
           <button className="buy-now-btn">Buy Now</button>
           <button className="add-to-wishlist-btn">Add to Wishlist</button>
@@ -201,7 +215,6 @@ function ProductDetail() {
               onChange={(e) => setSortOrder(e.target.value)}
             >
               <option value="mostRecent">Most Recent</option>
-              {/* Additional sorting options can be added here */}
             </select>
           </div>
         </div>
