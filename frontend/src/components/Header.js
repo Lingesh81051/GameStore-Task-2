@@ -1,12 +1,37 @@
 // frontend/src/components/Header.js
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
 
 function Header() {
   const [keyword, setKeyword] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false); // For vertical space
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const avatarRef = useRef(null);
+  const dropdownRef = useRef(null);
+
+  // Update user state on mount and when pathname changes.
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    setUser(storedUser ? JSON.parse(storedUser) : null);
+  }, [pathname]);
+
+  // When dropdown opens, check vertical space below the avatar.
+  useEffect(() => {
+    if (dropdownOpen && avatarRef.current && dropdownRef.current) {
+      const avatarRect = avatarRef.current.getBoundingClientRect();
+      const dropdownHeight = dropdownRef.current.offsetHeight;
+      // If not enough space below, open upward.
+      if (window.innerHeight - avatarRect.bottom < dropdownHeight) {
+        setOpenUp(true);
+      } else {
+        setOpenUp(false);
+      }
+    }
+  }, [dropdownOpen]);
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -15,6 +40,22 @@ function Header() {
     } else {
       navigate('/');
     }
+  };
+
+  const handleAvatarClick = () => {
+    if (!user) {
+      navigate('/login');
+    } else {
+      setDropdownOpen(!dropdownOpen);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setDropdownOpen(false);
+    navigate('/login');
   };
 
   return (
@@ -28,7 +69,7 @@ function Header() {
         </div>
       </div>
 
-      {/* Center Section: Show search bar only on Home page */}
+      {/* Center Section: Search bar (only on Home) */}
       {pathname === '/' && (
         <div className="header-center">
           <form onSubmit={submitHandler} className="search-form">
@@ -45,16 +86,13 @@ function Header() {
         </div>
       )}
 
-      {/* Right Section: Navigation links */}
+      {/* Right Section: Navigation and Avatar */}
       <div className="header-right">
         <div className="dropdown">
           <Link to="/" className="dropdown-trigger" title="Go to Home">
             <i className="bi bi-house"></i> Home
           </Link>
           <div className="dropdown-menu">
-            {/* <Link to="/discover" title="Discover new games">
-              <i className="bi bi-compass"></i> Discover
-            </Link> */}
             <Link to="/news" title="Latest news">
               <i className="bi bi-newspaper"></i> News
             </Link>
@@ -72,9 +110,36 @@ function Header() {
         <Link to="/cart" title="View Cart">
           <i className="bi bi-cart"></i> Cart
         </Link>
-        <Link to="/login" className="avatar-icon" title="Login / Sign Up">
-          <i className="bi bi-person-circle"></i>
-        </Link>
+        <div className="avatar-dropdown" ref={avatarRef}>
+          <img
+            src="/images/avatar.png"
+            alt="User Avatar"
+            className="avatar-icon"
+            onClick={handleAvatarClick}
+          />
+          {user && dropdownOpen && (
+            <div
+              ref={dropdownRef}
+              className={`dropdown-menu avatar-menu ${openUp ? 'open-up' : ''}`}
+            >
+              <div className="user-info">
+                <p><strong>Username:</strong> {user.name}</p>
+                <p><strong>Email:</strong> {user.email}</p>
+              </div>
+              <div className="dropdown-links">
+                <Link to="/profile" className="dropdown-item">
+                  <i className="bi bi-person"></i> Profile
+                </Link>
+                <Link to="/settings" className="dropdown-item">
+                  <i className="bi bi-gear"></i> Settings
+                </Link>
+                <button onClick={handleLogout} className="dropdown-item logout-btn">
+                  <i className="bi bi-box-arrow-right"></i> Log Out
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

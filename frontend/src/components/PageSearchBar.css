@@ -2,7 +2,7 @@
 .page-search-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* Removed justify-content: space-between so the search bar stays on the left */
   padding: 10px 20px;
   background-color: #f8f8f8;
   border-bottom: 1px solid #e0e0e0;
@@ -35,28 +35,4 @@
 
 .page-search-form button:hover {
   background-color: #2980b9;
-}
-
-.view-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.view-buttons button {
-  padding: 8px 12px;
-  border: 1px solid #3498db;
-  background-color: #fff;
-  color: #3498db;
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
-}
-
-.view-buttons button.active,
-.view-buttons button:hover {
-  background-color: #3498db;
-  color: #fff;
-}
-
-.view-buttons button i {
-  font-size: 1.2rem;
 }

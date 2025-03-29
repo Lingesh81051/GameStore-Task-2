@@ -1,7 +1,8 @@
 // frontend/src/components/Signup.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import './Auth.css';
+import axios from 'axios';
+import './Signup.css';
 
 function Signup() {
   const [name, setName] = useState('');
@@ -11,22 +12,28 @@ function Signup() {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       setMessage("Passwords don't match");
       return;
     }
-    // Replace with actual API call for signup
-    console.log('Signing up with:', { name, email, password });
-    navigate('/');
+    try {
+      const { data } = await axios.post('/api/auth/register', { name, email, password });
+      // Save the token (you can also use context or Redux)
+      localStorage.setItem('token', data.token);
+      navigate('/');
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Signup failed");
+      console.error("Signup error:", error);
+    }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
+    <div className="signup-container">
+      <div className="signup-box">
         <h2>Sign Up</h2>
-        {message && <p className="auth-message">{message}</p>}
+        {message && <p className="signup-message">{message}</p>}
         <form onSubmit={handleSignup}>
           <div className="form-group">
             <label>Name</label>
@@ -68,9 +75,9 @@ function Signup() {
               required
             />
           </div>
-          <button type="submit" className="auth-btn">Sign Up</button>
+          <button type="submit" className="signup-btn">Sign Up</button>
         </form>
-        <p className="auth-switch">
+        <p className="signup-switch">
           Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>

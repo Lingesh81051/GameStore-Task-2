@@ -5,17 +5,28 @@ import axios from 'axios';
 import './ProductDetail.css';
 
 function ProductDetail() {
-  const { id } = useParams();  // Get product id from URL
+  const { id } = useParams(); // Get product id from URL
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [similarGames, setSimilarGames] = useState([]);
   const [similarLoading, setSimilarLoading] = useState(true);
-  
-  // Comments state for the Comment Section
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [notification, setNotification] = useState(""); // Popup message state
+
+  // (Comments state omitted for brevity)
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [sortOrder, setSortOrder] = useState("mostRecent"); // default sort
+  const [sortOrder, setSortOrder] = useState("mostRecent");
+
+  // Helper: check if user is logged in
+  const isLoggedIn = () => Boolean(localStorage.getItem('token'));
+
+  // Helper: get auth config for protected API calls
+  const getAuthConfig = () => {
+    const token = localStorage.getItem('token');
+    return { headers: { Authorization: `Bearer ${token}` } };
+  };
 
   // Fetch product details
   useEffect(() => {
@@ -23,6 +34,13 @@ function ProductDetail() {
       try {
         const response = await axios.get(`/api/products/${id}`);
         setProduct(response.data);
+        // Only use localStorage wishlist if user is logged in.
+        if (isLoggedIn()) {
+          const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+          setIsWishlisted(wishlist.includes(response.data._id));
+        } else {
+          setIsWishlisted(false);
+        }
       } catch (error) {
         console.error("Error fetching product details:", error);
       } finally {
@@ -32,13 +50,13 @@ function ProductDetail() {
     if (id) fetchProduct();
   }, [id]);
 
-  // Once product is loaded, fetch similar games.
+  // Fetch similar games
   useEffect(() => {
     async function fetchSimilar() {
       if (!product) return;
       try {
         const res = await axios.get('/api/products');
-        const similar = res.data.filter(p => 
+        const similar = res.data.filter(p =>
           p._id !== product._id &&
           Array.isArray(p.categories) &&
           product.categories &&
@@ -54,12 +72,97 @@ function ProductDetail() {
     fetchSimilar();
   }, [product]);
 
-  // Comments functions
+  // Listen for wishlist updates from other pages
+  useEffect(() => {
+    const handleWishlistUpdated = (event) => {
+      if (event.detail && isLoggedIn()) {
+        // If the product was removed elsewhere, update state accordingly
+        if (event.detail.removed && product && product._id === event.detail.removed) {
+          setIsWishlisted(false);
+        }
+        // If the product was added elsewhere, update state accordingly
+        if (event.detail.added && product && product._id === event.detail.added) {
+          setIsWishlisted(true);
+        }
+      } else {
+        // When user is not logged in, always show "Add to Wishlist"
+        setIsWishlisted(false);
+      }
+    };
+    window.addEventListener('wishlistUpdated', handleWishlistUpdated);
+    return () => {
+      window.removeEventListener('wishlistUpdated', handleWishlistUpdated);
+    };
+  }, [product]);
+
+  // Handler for Add to Cart
+  const handleAddToCart = async () => {
+    if (!isLoggedIn()) {
+      navigate('/login');
+      return;
+    }
+    try {
+      await axios.post('/api/user/cart', { productId: product._id }, getAuthConfig());
+      console.log("Game added to cart.");
+      setNotification("Game added to cart");
+      setTimeout(() => setNotification(""), 2000);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    }
+  };
+
+  // Handler for Add to Wishlist
+  const handleAddToWishlist = async () => {
+    if (!isLoggedIn()) {
+      navigate('/login');
+      return;
+    }
+    try {
+      await axios.post('/api/user/wishlist', { productId: product._id }, getAuthConfig());
+      setIsWishlisted(true);
+      // Update localStorage for demo purposes
+      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      if (!wishlist.includes(product._id)) {
+        wishlist.push(product._id);
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+      }
+      setNotification("Game added to wishlist");
+      setTimeout(() => setNotification(""), 2000);
+      // Dispatch event to notify other pages
+      window.dispatchEvent(new CustomEvent('wishlistUpdated', { detail: { added: product._id } }));
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+    }
+  };
+
+  // Handler for Remove from Wishlist
+  const handleRemoveFromWishlist = async () => {
+    if (!isLoggedIn()) {
+      navigate('/login');
+      return;
+    }
+    try {
+      await axios.delete(`/api/user/wishlist/${product._id}`, getAuthConfig());
+      setIsWishlisted(false);
+      // Update localStorage by removing the product id
+      const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      const updated = wishlist.filter(id => id !== product._id);
+      localStorage.setItem('wishlist', JSON.stringify(updated));
+      setNotification("Game removed from wishlist");
+      setTimeout(() => setNotification(""), 2000);
+      // Dispatch event with detail for removed product
+      window.dispatchEvent(new CustomEvent('wishlistUpdated', { detail: { removed: product._id } }));
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+    }
+  };
+
+  // (Comments functions omitted for brevity)
   const handleAddComment = () => {
     if (!newComment.trim()) return;
     const comment = {
       id: Date.now(),
-      user: "Anonymous", // Replace with logged-in user if available
+      user: "Anonymous",
       text: newComment,
       likes: 0,
       timestamp: new Date()
@@ -74,13 +177,10 @@ function ProductDetail() {
 
   const handleLikeComment = (commentId) => {
     setComments(prev =>
-      prev.map(c =>
-        c.id === commentId ? { ...c, likes: c.likes + 1 } : c
-      )
+      prev.map(c => c.id === commentId ? { ...c, likes: c.likes + 1 } : c)
     );
   };
 
-  // Sort comments (only "mostRecent" implemented here)
   const sortedComments = [...comments].sort((a, b) => {
     if (sortOrder === "mostRecent") {
       return new Date(b.timestamp) - new Date(a.timestamp);
@@ -91,8 +191,8 @@ function ProductDetail() {
   if (loading) return <p>Loading...</p>;
   if (!product) return <p>Product not found.</p>;
 
-  const releaseDate = product.releaseDate 
-    ? new Date(product.releaseDate).toLocaleDateString() 
+  const releaseDate = product.releaseDate
+    ? new Date(product.releaseDate).toLocaleDateString()
     : "TBA";
 
   return (
@@ -101,9 +201,9 @@ function ProductDetail() {
         <button onClick={() => navigate(-1)}>&larr; Back</button>
       </div>
       <div className="hero-section">
-        <img 
-          src={product.image.startsWith('/') ? `http://localhost:5000${product.image}` : product.image} 
-          alt={product.name} 
+        <img
+          src={product.image.startsWith('/') ? `http://localhost:5000${product.image}` : product.image}
+          alt={product.name}
           className="hero-image"
           onError={(e) => {
             if (e.target.src !== 'http://localhost:5000/images/placeholder.png') {
@@ -136,7 +236,6 @@ function ProductDetail() {
             <strong>Ratings:</strong> {product.ratings ? `${product.ratings} / 5` : "No ratings yet"}
           </div>
         </div>
-        {/* Minimum System Requirements Section */}
         {product.minRequirements && (
           <div className="min-requirements">
             <h2>Minimum System Requirements</h2>
@@ -151,20 +250,32 @@ function ProductDetail() {
           </div>
         )}
         <div className="cta-buttons">
-          <button className="buy-now-btn">Buy Now</button>
-          <button className="add-to-wishlist-btn">Add to Wishlist</button>
-          <button className="add-to-cart-btn">Add to Cart</button>
+          {isWishlisted ? (
+            <button className="remove-from-wishlist-btn" onClick={handleRemoveFromWishlist}>
+              Remove from Wishlist
+            </button>
+          ) : (
+            <button className="add-to-wishlist-btn" onClick={handleAddToWishlist}>
+              Add to Wishlist
+            </button>
+          )}
+          <button className="add-to-cart-btn" onClick={handleAddToCart}>Add to Cart</button>
         </div>
+        {notification && (
+          <div className="notification-popup">
+            {notification}
+          </div>
+        )}
       </div>
       <div className="trailer-section">
         <h2 className="section-title left-align">Game Trailer</h2>
         {product.trailer ? (
           <div className="trailer-container">
-            <iframe 
+            <iframe
               src={product.trailer}
               title="Game Trailer"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             ></iframe>
           </div>
@@ -181,13 +292,13 @@ function ProductDetail() {
         ) : (
           <div className="recommendations-container">
             {similarGames.map(similar => {
-              const simImage = similar.image.startsWith('/') 
-                ? `http://localhost:5000${similar.image}` 
+              const simImage = similar.image.startsWith('/')
+                ? `http://localhost:5000${similar.image}`
                 : similar.image;
               return (
                 <div className="recommendation-card" key={similar._id}>
-                  <img 
-                    src={simImage} 
+                  <img
+                    src={simImage}
                     alt={similar.name}
                     onError={(e) => {
                       if (e.target.src !== 'http://localhost:5000/images/placeholder.png') {
@@ -212,17 +323,13 @@ function ProductDetail() {
           <h2>Comments</h2>
           <div className="sort-options">
             <label htmlFor="sort">Sort by:</label>
-            <select 
-              id="sort" 
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-            >
+            <select id="sort" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
               <option value="mostRecent">Most Recent</option>
             </select>
           </div>
         </div>
         <div className="new-comment">
-          <textarea 
+          <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add your comment..."

@@ -1,7 +1,8 @@
 // frontend/src/components/Login.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import './Auth.css';
+import axios from 'axios';
+import './Login.css';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -11,17 +12,23 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    // Replace the following with your actual login API call if needed.
-    console.log('Logging in with:', { email, password });
-    // For demonstration, we simply navigate to home.
-    navigate('/');
+    try {
+      const { data } = await axios.post('/api/auth/login', { email, password });
+      // Save token and user details in localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/');
+    } catch (error) {
+      setMessage(error.response?.data?.message || 'Login failed');
+      console.error("Login error:", error);
+    }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
+    <div className="login-container">
+      <div className="login-box">
         <h2>Login</h2>
-        {message && <p className="auth-message">{message}</p>}
+        {message && <p className="login-message">{message}</p>}
         <form onSubmit={handleLogin}>
           <div className="form-group">
             <label>Email</label>
@@ -43,9 +50,9 @@ function Login() {
               required
             />
           </div>
-          <button type="submit" className="auth-btn">Login</button>
+          <button type="submit" className="login-btn">Login</button>
         </form>
-        <p className="auth-switch">
+        <p className="login-switch">
           Don't have an account? <Link to="/signup">Sign Up</Link>
         </p>
       </div>

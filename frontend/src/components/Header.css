@@ -19,7 +19,7 @@
   margin-right: 8px;
 }
 
-/* Center Section: search bar (only on Home) */
+/* Center Section: Search Bar */
 .header-center {
   flex: 1;
   display: flex;
@@ -50,36 +50,30 @@
   background-color: #2980b9;
 }
 
-/* Right Section: Navigation */
+/* Right Section: Navigation and Avatar */
 .header-right {
   display: flex;
   align-items: center;
   gap: 20px;
   justify-content: flex-end;
+  margin: 0;
+  padding: 0;
 }
 .header-right a {
   text-decoration: none;
   font-size: 1rem;
   color: #3498db;
   transition: color 0.2s;
+  margin: 0;
+  padding: 0;
 }
 .header-right a:hover {
   color: #2980b9;
 }
 
-/* Dropdown for Home */
+/* Navigation Dropdown (Home) */
 .dropdown {
   position: relative;
-}
-.dropdown-trigger {
-  font-size: 1rem;
-  color: #3498db;
-  cursor: pointer;
-  padding: 5px 10px;
-  transition: color 0.2s;
-}
-.dropdown-trigger:hover {
-  color: #2980b9;
 }
 .dropdown-menu {
   display: none;
@@ -92,6 +86,8 @@
   border-radius: 4px;
   z-index: 100;
   min-width: 150px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 .dropdown-menu a {
   display: block;
@@ -105,14 +101,96 @@
 }
 .dropdown:hover .dropdown-menu {
   display: block;
+  opacity: 1;
 }
 
-/* Avatar icon styling */
-.avatar-icon i {
-  font-size: 2rem;
-  color: #3498db;
-  transition: color 0.2s;
+/* Avatar Dropdown */
+.avatar-dropdown {
+  position: relative;
+  margin: 0;
 }
-.avatar-icon i:hover {
-  color: #2980b9;
+.avatar-icon {
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 50%;
+  cursor: pointer;
+  object-fit: cover;
+  margin: 0;
+  display: block;
+}
+
+/* Avatar Dropdown Menu - using same styling as Home dropdown */
+.avatar-dropdown .avatar-menu {
+  display: block;
+  position: absolute;
+  right: 0;
+  left: auto;
+  z-index: 100;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  width: 220px;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease;
+  top: 110%;
+  bottom: auto;
+}
+
+/* Open upward if not enough space below */
+.avatar-dropdown .avatar-menu.open-up {
+  top: auto;
+  bottom: 110%;
+}
+
+/* User Info Section */
+.user-info {
+  padding: 10px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+}
+.user-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* Dropdown Links */
+.dropdown-links {
+  display: flex;
+  flex-direction: column;
+}
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #3498db;
+  border-bottom: 1px solid #e0e0e0;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+.dropdown-item:hover {
+  background-color: #f0f4f8;
+}
+
+/* Logout Button: Red text and red icon */
+.logout-btn {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  color: #e74c3c !important; /* red text */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logout-btn i {
+  color: #e74c3c; /* red icon */
 }

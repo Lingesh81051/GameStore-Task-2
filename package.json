@@ -13,7 +13,9 @@
     "nodemon": "^3.1.9"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
-    "bootstrap-icons": "^1.11.3"
+    "bootstrap-icons": "^1.11.3",
+    "react-popper": "^2.3.0"
   }
 }

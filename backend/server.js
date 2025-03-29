@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -15,10 +14,11 @@ app.use(cors());
 // Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Include your routes
+// Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/products', require('./routes/product'));
-app.use('/api/news', require('./routes/news'));
+app.use('/api/products', require('./routes/product')); // your existing product routes
+app.use('/api/news', require('./routes/news')); // your existing news routes
+app.use('/api/user', require('./routes/user')); // user routes (wishlist, cart, profile)
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

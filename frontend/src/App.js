@@ -6,7 +6,7 @@ import Footer from './components/Footer';
 import Home from './components/Home';
 import Discover from './components/Discover';
 import News from './components/News';
-import NewsDetail from './components/NewsDetail';  // Detailed news view
+import NewsDetail from './components/NewsDetail';
 import Library from './components/Library';
 import Wishlist from './components/Wishlist';
 import Categories from './components/Categories';
@@ -15,7 +15,6 @@ import Cart from './components/Cart';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Checkout from './components/Checkout';
-
 import './App.css';
 
 function App() {
@@ -27,7 +26,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/discover" element={<Discover />} />
           <Route path="/news" element={<News />} />
-          <Route path="/news/:id" element={<NewsDetail />} /> {/* News detail view */}
+          <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/library" element={<Library />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/categories" element={<Categories />} />
