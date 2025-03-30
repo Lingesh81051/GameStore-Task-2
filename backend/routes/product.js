@@ -62,4 +62,133 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+
+// ---------- Comment Endpoints ----------
+
+// GET all comments for a product
+router.get('/:id/comments', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      res.json(product.comments || []);
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST a new comment for a product
+router.post('/:id/comments', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      const newComment = {
+        id: Date.now().toString(),
+        user: req.body.user,
+        text: req.body.text,
+        likes: 0,
+        timestamp: new Date(),
+        replies: []
+      };
+      product.comments = product.comments || [];
+      product.comments.push(newComment);
+      await product.save();
+      res.status(201).json(newComment);
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// DELETE a comment
+router.delete('/:id/comments/:commentId', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      product.comments = product.comments.filter(comment => comment.id !== req.params.commentId);
+      await product.save();
+      res.json({ message: 'Comment deleted' });
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// PUT update (modify) a comment
+router.put('/:id/comments/:commentId', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      const comment = product.comments.find(comment => comment.id === req.params.commentId);
+      if (comment) {
+        comment.text = req.body.text;
+        await product.save();
+        res.json(comment);
+      } else {
+        res.status(404).json({ message: 'Comment not found' });
+      }
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST like a comment
+router.post('/:id/comments/:commentId/like', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      const comment = product.comments.find(comment => comment.id === req.params.commentId);
+      if (comment) {
+        comment.likes += 1;
+        await product.save();
+        res.json(comment);
+      } else {
+        res.status(404).json({ message: 'Comment not found' });
+      }
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST reply to a comment
+router.post('/:id/comments/:commentId/reply', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      const comment = product.comments.find(comment => comment.id === req.params.commentId);
+      if (comment) {
+        const reply = {
+          id: Date.now().toString(),
+          user: req.body.user,
+          text: req.body.text,
+          likes: 0,
+          timestamp: new Date()
+        };
+        comment.replies = comment.replies || [];
+        comment.replies.push(reply);
+        await product.save();
+        res.status(201).json(reply);
+      } else {
+        res.status(404).json({ message: 'Comment not found' });
+      }
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

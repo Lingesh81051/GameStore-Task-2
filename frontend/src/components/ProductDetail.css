@@ -111,7 +111,6 @@
   transition: background-color 0.3s ease;
 }
 
-/* Wishlist Button Styling */
 .add-to-wishlist-btn {
   background-color: #f1c40f;
   color: #fff;
@@ -120,7 +119,6 @@
   background-color: #d4ac0d;
 }
 
-/* Cart Button Styling for ProductDetail page */
 .add-to-cart-btn {
   background-color: #3498db;
   color: #fff;
@@ -236,9 +234,12 @@
   background-color: #2980b9;
 }
 
+/* Enhanced Comment Section Styles */
 .comments-section {
   margin-top: 50px;
   text-align: left;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 30px;
 }
 
 .comments-header {
@@ -320,6 +321,7 @@
 .comment-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-weight: bold;
   margin-bottom: 10px;
   color: #333;
@@ -328,6 +330,7 @@
 .comment-text {
   font-size: 1rem;
   color: #555;
+  margin: 10px 0;
 }
 
 .comment-actions {
@@ -349,6 +352,31 @@
 
 .comment-actions button:hover {
   background-color: #2980b9;
+}
+
+/* Styles for replies */
+.replies {
+  margin-top: 15px;
+  padding-left: 15px;
+  border-left: 2px solid #ccc;
+}
+
+.reply {
+  margin-bottom: 10px;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.reply-text {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0;
 }
 
 @keyframes fadeIn {

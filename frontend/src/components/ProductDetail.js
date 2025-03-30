@@ -15,10 +15,15 @@ function ProductDetail() {
   const [isInCart, setIsInCart] = useState(false);
   const [notification, setNotification] = useState(""); // Popup message state
 
-  // (Comments state omitted for brevity)
+  // Comments state
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [sortOrder, setSortOrder] = useState("mostRecent");
+
+  // Determine current user from localStorage (assumes "user" key exists as JSON string with a "name" field)
+  const currentUser = localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user'))
+    : null;
 
   // Helper: check if user is logged in
   const isLoggedIn = () => Boolean(localStorage.getItem('token'));
@@ -35,7 +40,6 @@ function ProductDetail() {
       try {
         const response = await axios.get(`/api/products/${id}`);
         setProduct(response.data);
-        // Only use stored wishlist if user is logged in.
         if (isLoggedIn()) {
           const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
           setIsWishlisted(wishlist.includes(response.data._id));
@@ -74,15 +78,11 @@ function ProductDetail() {
   }, [product]);
 
   // Fetch cart items to set the initial cart state.
-  // Assuming your backend returns cart items with a nested product field.
   useEffect(() => {
     async function fetchCart() {
       if (isLoggedIn() && product) {
         try {
           const res = await axios.get('/api/user/cart', getAuthConfig());
-          // Check if the product is in the cart.
-          // Adjust the check based on your backend structure.
-          // Here we assume each cart item has a "product" field with the product data.
           const inCart = res.data.some(item => item.product && item.product._id === product._id);
           setIsInCart(inCart);
         } catch (error) {
@@ -94,6 +94,22 @@ function ProductDetail() {
     }
     fetchCart();
   }, [product]);
+
+  // Fetch comments from backend
+  const fetchComments = async () => {
+    try {
+      const res = await axios.get(`/api/products/${id}/comments`);
+      setComments(res.data);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchComments();
+    }
+  }, [id]);
 
   // Listen for wishlist updates from other pages
   useEffect(() => {
@@ -122,19 +138,16 @@ function ProductDetail() {
       return;
     }
     if (!isInCart) {
-      // Add to cart
       try {
         await axios.post('/api/user/cart', { productId: product._id }, getAuthConfig());
         setIsInCart(true);
         setNotification("Game added to cart");
         setTimeout(() => setNotification(""), 2000);
-        // Optionally, dispatch an event to update the cart page.
         window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { added: product._id } }));
       } catch (error) {
         console.error("Error adding to cart:", error);
       }
     } else {
-      // Remove from cart
       try {
         await axios.delete(`/api/user/cart/${product._id}`, getAuthConfig());
         setIsInCart(false);
@@ -147,7 +160,7 @@ function ProductDetail() {
     }
   };
 
-  // Handler for Add to Wishlist
+  // Handler for adding to wishlist
   const handleAddToWishlist = async () => {
     if (!isLoggedIn()) {
       navigate('/login');
@@ -169,7 +182,7 @@ function ProductDetail() {
     }
   };
 
-  // Handler for Remove from Wishlist
+  // Handler for removing from wishlist
   const handleRemoveFromWishlist = async () => {
     if (!isLoggedIn()) {
       navigate('/login');
@@ -189,36 +202,104 @@ function ProductDetail() {
     }
   };
 
-  // (Comments functions omitted for brevity)
-  const handleAddComment = () => {
+  // --- Enhanced Comment Section ---
+
+  // Redirect to login if not authenticated for any comment action
+  const requireAuth = () => {
+    if (!isLoggedIn()) {
+      navigate('/login');
+      return false;
+    }
+    return true;
+  };
+
+  // Handler for posting a comment (persisted to backend)
+  const handleAddComment = async () => {
+    if (!requireAuth()) return;
     if (!newComment.trim()) return;
-    const comment = {
-      id: Date.now(),
-      user: "Anonymous",
-      text: newComment,
-      likes: 0,
-      timestamp: new Date()
+    // Use currentUser.name for display if available
+    const name = currentUser?.name || "Anonymous";
+    const commentData = {
+      user: name,
+      text: newComment
     };
-    setComments(prev => [comment, ...prev]);
-    setNewComment("");
+    try {
+      await axios.post(`/api/products/${id}/comments`, commentData, getAuthConfig());
+      setNewComment("");
+      fetchComments();
+    } catch (error) {
+      console.error("Error posting comment:", error);
+    }
   };
 
-  const handleDeleteComment = (commentId) => {
-    setComments(prev => prev.filter(c => c.id !== commentId));
+  // Handler for deleting a comment (only for comment author)
+  const handleDeleteComment = async (commentId) => {
+    if (!requireAuth()) return;
+    try {
+      await axios.delete(`/api/products/${id}/comments/${commentId}`, getAuthConfig());
+      fetchComments();
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
   };
 
-  const handleLikeComment = (commentId) => {
+  // Handler for liking a comment
+  const handleLikeComment = async (commentId) => {
+    if (!requireAuth()) return;
+    try {
+      await axios.post(`/api/products/${id}/comments/${commentId}/like`, {}, getAuthConfig());
+      fetchComments();
+    } catch (error) {
+      console.error("Error liking comment:", error);
+    }
+  };
+
+  // Handler for starting comment modification (only for comment author)
+  const handleModifyComment = (commentId) => {
+    if (!requireAuth()) return;
     setComments(prev =>
-      prev.map(c => c.id === commentId ? { ...c, likes: c.likes + 1 } : c)
+      prev.map(c => c.id === commentId ? { ...c, isEditing: true, editText: c.text } : c)
     );
   };
 
-  const sortedComments = [...comments].sort((a, b) => {
-    if (sortOrder === "mostRecent") {
-      return new Date(b.timestamp) - new Date(a.timestamp);
+  // Handler for saving modified comment
+  const handleSaveModifiedComment = async (commentId) => {
+    const commentToUpdate = comments.find(c => c.id === commentId);
+    if (!commentToUpdate) return;
+    try {
+      await axios.put(
+        `/api/products/${id}/comments/${commentId}`,
+        { text: commentToUpdate.editText },
+        getAuthConfig()
+      );
+      fetchComments();
+    } catch (error) {
+      console.error("Error saving modified comment:", error);
     }
-    return 0;
-  });
+  };
+
+  // Handler for updating edit text for a comment
+  const handleEditChange = (commentId, value) => {
+    setComments(prev =>
+      prev.map(c => c.id === commentId ? { ...c, editText: value } : c)
+    );
+  };
+
+  // Handler for replying to a comment
+  const handleReply = async (commentId, replyText) => {
+    if (!requireAuth()) return;
+    if (!replyText.trim()) return;
+    const name = currentUser?.name || "Anonymous";
+    const replyData = { user: name, text: replyText };
+    try {
+      await axios.post(`/api/products/${id}/comments/${commentId}/reply`, replyData, getAuthConfig());
+      fetchComments();
+    } catch (error) {
+      console.error("Error replying to comment:", error);
+    }
+  };
+
+  const sortedComments = [...comments].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   if (loading) return <p>Loading...</p>;
   if (!product) return <p>Product not found.</p>;
@@ -366,14 +447,16 @@ function ProductDetail() {
             </select>
           </div>
         </div>
-        <div className="new-comment">
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add your comment..."
-          ></textarea>
-          <button onClick={handleAddComment}>Post Comment</button>
-        </div>
+        {isLoggedIn() && (
+          <div className="new-comment">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add your comment..."
+            ></textarea>
+            <button onClick={handleAddComment}>Post Comment</button>
+          </div>
+        )}
         <div className="comments-list">
           {sortedComments.map(comment => (
             <div className="comment-card" key={comment.id}>
@@ -381,15 +464,55 @@ function ProductDetail() {
                 <span className="comment-user">{comment.user}</span>
                 <span className="comment-timestamp">{new Date(comment.timestamp).toLocaleString()}</span>
               </div>
-              <p className="comment-text">{comment.text}</p>
-              <div className="comment-actions">
-                <button onClick={() => handleLikeComment(comment.id)}>
-                  Like ({comment.likes})
-                </button>
-                <button onClick={() => handleDeleteComment(comment.id)}>
-                  Delete
-                </button>
-              </div>
+              {comment.isEditing ? (
+                <>
+                  <textarea
+                    value={comment.editText || comment.text}
+                    onChange={(e) => handleEditChange(comment.id, e.target.value)}
+                  ></textarea>
+                  <button onClick={() => handleSaveModifiedComment(comment.id)}>Save</button>
+                </>
+              ) : (
+                <p className="comment-text">{comment.text}</p>
+              )}
+              {isLoggedIn() && (
+                <div className="comment-actions">
+                  <button onClick={() => handleLikeComment(comment.id)}>
+                    Like ({comment.likes})
+                  </button>
+                  {currentUser && currentUser.name === comment.user && (
+                    <>
+                      <button onClick={() => handleDeleteComment(comment.id)}>
+                        Delete
+                      </button>
+                      <button onClick={() => handleModifyComment(comment.id)}>
+                        Modify
+                      </button>
+                    </>
+                  )}
+                  <button onClick={() => {
+                    const reply = prompt("Enter your reply:");
+                    if (reply) {
+                      handleReply(comment.id, reply);
+                    }
+                  }}>
+                    Reply
+                  </button>
+                </div>
+              )}
+              {comment.replies && comment.replies.length > 0 && (
+                <div className="replies">
+                  {comment.replies.map(reply => (
+                    <div key={reply.id} className="reply">
+                      <div className="reply-header">
+                        <span className="reply-user">{reply.user}</span>
+                        <span className="reply-timestamp">{new Date(reply.timestamp).toLocaleString()}</span>
+                      </div>
+                      <p className="reply-text">{reply.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
