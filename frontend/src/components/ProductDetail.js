@@ -12,6 +12,7 @@ function ProductDetail() {
   const [similarGames, setSimilarGames] = useState([]);
   const [similarLoading, setSimilarLoading] = useState(true);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isInCart, setIsInCart] = useState(false);
   const [notification, setNotification] = useState(""); // Popup message state
 
   // (Comments state omitted for brevity)
@@ -34,7 +35,7 @@ function ProductDetail() {
       try {
         const response = await axios.get(`/api/products/${id}`);
         setProduct(response.data);
-        // Only use localStorage wishlist if user is logged in.
+        // Only use stored wishlist if user is logged in.
         if (isLoggedIn()) {
           const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
           setIsWishlisted(wishlist.includes(response.data._id));
@@ -72,20 +73,39 @@ function ProductDetail() {
     fetchSimilar();
   }, [product]);
 
+  // Fetch cart items to set the initial cart state.
+  // Assuming your backend returns cart items with a nested product field.
+  useEffect(() => {
+    async function fetchCart() {
+      if (isLoggedIn() && product) {
+        try {
+          const res = await axios.get('/api/user/cart', getAuthConfig());
+          // Check if the product is in the cart.
+          // Adjust the check based on your backend structure.
+          // Here we assume each cart item has a "product" field with the product data.
+          const inCart = res.data.some(item => item.product && item.product._id === product._id);
+          setIsInCart(inCart);
+        } catch (error) {
+          console.error("Error fetching cart:", error);
+        }
+      } else {
+        setIsInCart(false);
+      }
+    }
+    fetchCart();
+  }, [product]);
+
   // Listen for wishlist updates from other pages
   useEffect(() => {
     const handleWishlistUpdated = (event) => {
       if (event.detail && isLoggedIn()) {
-        // If the product was removed elsewhere, update state accordingly
         if (event.detail.removed && product && product._id === event.detail.removed) {
           setIsWishlisted(false);
         }
-        // If the product was added elsewhere, update state accordingly
         if (event.detail.added && product && product._id === event.detail.added) {
           setIsWishlisted(true);
         }
       } else {
-        // When user is not logged in, always show "Add to Wishlist"
         setIsWishlisted(false);
       }
     };
@@ -95,19 +115,35 @@ function ProductDetail() {
     };
   }, [product]);
 
-  // Handler for Add to Cart
-  const handleAddToCart = async () => {
+  // Handler for toggling cart status
+  const handleToggleCart = async () => {
     if (!isLoggedIn()) {
       navigate('/login');
       return;
     }
-    try {
-      await axios.post('/api/user/cart', { productId: product._id }, getAuthConfig());
-      console.log("Game added to cart.");
-      setNotification("Game added to cart");
-      setTimeout(() => setNotification(""), 2000);
-    } catch (error) {
-      console.error("Error adding to cart:", error);
+    if (!isInCart) {
+      // Add to cart
+      try {
+        await axios.post('/api/user/cart', { productId: product._id }, getAuthConfig());
+        setIsInCart(true);
+        setNotification("Game added to cart");
+        setTimeout(() => setNotification(""), 2000);
+        // Optionally, dispatch an event to update the cart page.
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { added: product._id } }));
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+      }
+    } else {
+      // Remove from cart
+      try {
+        await axios.delete(`/api/user/cart/${product._id}`, getAuthConfig());
+        setIsInCart(false);
+        setNotification("Game removed from cart");
+        setTimeout(() => setNotification(""), 2000);
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { removed: product._id } }));
+      } catch (error) {
+        console.error("Error removing from cart:", error);
+      }
     }
   };
 
@@ -120,7 +156,6 @@ function ProductDetail() {
     try {
       await axios.post('/api/user/wishlist', { productId: product._id }, getAuthConfig());
       setIsWishlisted(true);
-      // Update localStorage for demo purposes
       const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
       if (!wishlist.includes(product._id)) {
         wishlist.push(product._id);
@@ -128,7 +163,6 @@ function ProductDetail() {
       }
       setNotification("Game added to wishlist");
       setTimeout(() => setNotification(""), 2000);
-      // Dispatch event to notify other pages
       window.dispatchEvent(new CustomEvent('wishlistUpdated', { detail: { added: product._id } }));
     } catch (error) {
       console.error("Error adding to wishlist:", error);
@@ -144,13 +178,11 @@ function ProductDetail() {
     try {
       await axios.delete(`/api/user/wishlist/${product._id}`, getAuthConfig());
       setIsWishlisted(false);
-      // Update localStorage by removing the product id
       const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
       const updated = wishlist.filter(id => id !== product._id);
       localStorage.setItem('wishlist', JSON.stringify(updated));
       setNotification("Game removed from wishlist");
       setTimeout(() => setNotification(""), 2000);
-      // Dispatch event with detail for removed product
       window.dispatchEvent(new CustomEvent('wishlistUpdated', { detail: { removed: product._id } }));
     } catch (error) {
       console.error("Error removing from wishlist:", error);
@@ -259,7 +291,9 @@ function ProductDetail() {
               Add to Wishlist
             </button>
           )}
-          <button className="add-to-cart-btn" onClick={handleAddToCart}>Add to Cart</button>
+          <button className="add-to-cart-btn" onClick={handleToggleCart}>
+            {isInCart ? "Remove from Cart" : "Add to Cart"}
+          </button>
         </div>
         {notification && (
           <div className="notification-popup">
@@ -323,7 +357,11 @@ function ProductDetail() {
           <h2>Comments</h2>
           <div className="sort-options">
             <label htmlFor="sort">Sort by:</label>
-            <select id="sort" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+            <select
+              id="sort"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
               <option value="mostRecent">Most Recent</option>
             </select>
           </div>

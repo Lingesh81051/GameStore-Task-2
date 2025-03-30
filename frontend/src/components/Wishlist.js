@@ -7,6 +7,7 @@ import './Wishlist.css';
 
 function Wishlist() {
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [cartIds, setCartIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState('');
   const navigate = useNavigate();
@@ -19,7 +20,6 @@ function Wishlist() {
       const response = await axios.get('/api/user/profile', config);
       // Assuming response.data.wishlist is an array of product objects
       setWishlistItems(response.data.wishlist || []);
-      // Update localStorage with the product IDs for demo purposes
       const ids = (response.data.wishlist || []).map(item => item._id);
       localStorage.setItem('wishlist', JSON.stringify(ids));
     } catch (error) {
@@ -29,21 +29,45 @@ function Wishlist() {
     }
   }, []);
 
-  // Fetch wishlist on mount
+  // Function to fetch cart product IDs for the logged-in user
+  const fetchCart = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const response = await axios.get('/api/user/cart', config);
+      // Assuming each cart item has a nested product field:
+      const ids = response.data
+        .filter(item => item.product)
+        .map(item => item.product._id);
+      setCartIds(ids);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+    }
+  };
+
+  // Fetch wishlist and cart items on component mount
   useEffect(() => {
     fetchWishlist();
+    fetchCart();
   }, [fetchWishlist]);
 
-  // Listen for custom 'wishlistUpdated' events to refresh wishlist
+  // Listen for custom events to refresh data
   useEffect(() => {
-    const handleWishlistUpdated = () => {
-      fetchWishlist();
-    };
+    const handleWishlistUpdated = () => fetchWishlist();
     window.addEventListener('wishlistUpdated', handleWishlistUpdated);
     return () => {
       window.removeEventListener('wishlistUpdated', handleWishlistUpdated);
     };
   }, [fetchWishlist]);
+
+  useEffect(() => {
+    const handleCartUpdated = () => fetchCart();
+    window.addEventListener('cartUpdated', handleCartUpdated);
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdated);
+    };
+  }, []);
 
   const handleSearch = (keyword) => {
     setSearchKeyword(keyword);
@@ -55,11 +79,9 @@ function Wishlist() {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.delete(`/api/user/wishlist/${productId}`, config);
-      // Update localStorage by removing the product id
       const stored = JSON.parse(localStorage.getItem('wishlist') || '[]');
       const updated = stored.filter(id => id !== productId);
       localStorage.setItem('wishlist', JSON.stringify(updated));
-      // Dispatch event with detail for removed product
       window.dispatchEvent(new CustomEvent('wishlistUpdated', { detail: { removed: productId } }));
       fetchWishlist();
     } catch (error) {
@@ -67,33 +89,37 @@ function Wishlist() {
     }
   };
 
-  // Handler for adding a product to cart from wishlist page
-  const handleAddToCart = async (productId) => {
+  // Handler for cart action:
+  // If not in cart → add to cart.
+  // If already in cart → navigate to Cart page and scroll to the game tile.
+  const handleCartAction = async (productId) => {
     if (!localStorage.getItem('token')) {
       navigate('/login');
       return;
     }
-    try {
-      const token = localStorage.getItem('token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post('/api/user/cart', { productId }, config);
-      alert("Game added to cart");
-    } catch (error) {
-      console.error("Error adding to cart:", error);
+    const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } };
+    if (!cartIds.includes(productId)) {
+      try {
+        await axios.post('/api/user/cart', { productId }, config);
+        alert("Game added to cart");
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { added: productId } }));
+        fetchCart();
+      } catch (error) {
+        console.error("Error adding to cart:", error);
+      }
+    } else {
+      // Navigate to cart page with hash to scroll to product tile.
+      navigate(`/cart#product-${productId}`);
     }
   };
 
-  // Filter items based on search keyword
   const filteredItems = wishlistItems.filter(item =>
     item.name.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
   return (
     <div className="wishlist-page">
-      <PageSearchBar
-        placeholder="Search in Wishlist..."
-        onSearch={handleSearch}
-      />
+      <PageSearchBar placeholder="Search in Wishlist..." onSearch={handleSearch} />
       <div className="wishlist-container">
         <h1>Your Wishlist</h1>
         {loading ? (
@@ -114,17 +140,18 @@ function Wishlist() {
                     }
                   }}
                 />
-                <h3>{item.name}</h3>
+                <h3>
+                  <Link to={`/product/${item._id}`} className="title-link">
+                    {item.name}
+                  </Link>
+                </h3>
                 <p className="price">${item.price}</p>
                 <div className="button-group">
-                  <Link to={`/product/${item._id}`} className="details-btn">
-                    View Details
-                  </Link>
                   <button onClick={() => handleRemoveFromWishlist(item._id)} className="remove-btn">
                     Remove from Wishlist
                   </button>
-                  <button onClick={() => handleAddToCart(item._id)} className="add-to-cart-btn">
-                    Add to Cart
+                  <button onClick={() => handleCartAction(item._id)} className="add-to-cart-btn">
+                    {cartIds.includes(item._id) ? "View in Cart" : "Add to Cart"}
                   </button>
                 </div>
               </div>

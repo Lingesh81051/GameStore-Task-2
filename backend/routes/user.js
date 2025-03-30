@@ -26,6 +26,20 @@ router.get('/profile', protect, async (req, res) => {
   }
 });
 
+// NEW: GET /api/user/cart - Get user cart items
+router.get('/cart', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate('cart.product');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user.cart);
+  } catch (error) {
+    console.error("Error fetching cart:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // POST /api/user/wishlist - Add product to wishlist
 router.post('/wishlist', protect, async (req, res) => {
   const { productId } = req.body;
@@ -63,11 +77,11 @@ router.post('/cart', protect, async (req, res) => {
     const user = await User.findById(req.user.id);
     const cartItem = user.cart.find(item => item.product.toString() === productId);
     if (cartItem) {
-      // Update quantity if item exists
-      cartItem.quantity = quantity;
+      // Update quantity if item exists (default to quantity provided, or 1 if not given)
+      cartItem.quantity = quantity || cartItem.quantity;
     } else {
-      // Otherwise, add new item to cart
-      user.cart.push({ product: productId, quantity });
+      // Otherwise, add new item to cart with default quantity 1 if not provided
+      user.cart.push({ product: productId, quantity: quantity || 1 });
     }
     await user.save();
     res.json({ cart: user.cart });

@@ -6,9 +6,11 @@
   font-family: 'Roboto', sans-serif;
   background-color: #fff;
 }
+
 .back-button {
   margin-bottom: 20px;
 }
+
 .back-button button {
   background: none;
   border: none;
@@ -17,9 +19,11 @@
   cursor: pointer;
   transition: color 0.2s;
 }
+
 .back-button button:hover {
   color: #2980b9;
 }
+
 .hero-section {
   position: relative;
   width: 100%;
@@ -27,6 +31,7 @@
   overflow: hidden;
   margin-bottom: 20px;
 }
+
 .hero-image {
   width: 100%;
   height: 100%;
@@ -34,71 +39,79 @@
   filter: brightness(0.8);
   transition: filter 0.3s ease;
 }
+
 .hero-image:hover {
   filter: brightness(1);
 }
+
 .info-section {
   padding: 20px;
 }
+
 .product-title {
   font-size: 2.5rem;
   color: #3498db;
   margin-bottom: 10px;
 }
+
 .product-description {
   font-size: 1.2rem;
   color: #555;
   margin-bottom: 20px;
   line-height: 1.6;
 }
+
 .product-details {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
   margin-bottom: 20px;
 }
+
 .detail-item {
   flex: 1 1 200px;
   font-size: 1rem;
   color: #333;
 }
+
 .min-requirements {
   border-top: 1px solid #e0e0e0;
   padding-top: 20px;
   margin-top: 20px;
 }
+
 .min-requirements h2 {
   font-size: 1.8rem;
   color: #3498db;
   margin-bottom: 15px;
 }
+
 .min-requirements p {
   font-size: 1rem;
   color: #555;
   margin: 5px 0;
 }
+
+/* CTA Buttons Container aligned to the left */
 .cta-buttons {
   margin-top: 20px;
   display: flex;
-  gap: 15px;
+  justify-content: flex-start;
+  gap: 10px;
 }
-.buy-now-btn,
+
+/* Smaller CTA buttons for ProductDetail page */
 .add-to-wishlist-btn,
 .add-to-cart-btn {
-  padding: 12px 24px;
-  font-size: 1.2rem;
+  padding: 8px 16px;
+  font-size: 1rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-.buy-now-btn {
-  background-color: #e74c3c;
-  color: #fff;
-}
-.buy-now-btn:hover {
-  background-color: #c0392b;
-}
+
+/* Wishlist Button Styling */
 .add-to-wishlist-btn {
   background-color: #f1c40f;
   color: #fff;
@@ -106,6 +119,8 @@
 .add-to-wishlist-btn:hover {
   background-color: #d4ac0d;
 }
+
+/* Cart Button Styling for ProductDetail page */
 .add-to-cart-btn {
   background-color: #3498db;
   color: #fff;
@@ -113,6 +128,7 @@
 .add-to-cart-btn:hover {
   background-color: #2980b9;
 }
+
 .notification-popup {
   margin-top: 15px;
   padding: 10px 15px;
@@ -124,15 +140,18 @@
   text-align: center;
   animation: fadeIn 0.3s ease;
 }
+
 .trailer-section {
   margin-top: 50px;
   text-align: left;
 }
+
 .trailer-section h2 {
   font-size: 2rem;
   color: #3498db;
   margin-bottom: 20px;
 }
+
 .trailer-container {
   position: relative;
   padding-bottom: 56.25%;
@@ -141,6 +160,7 @@
   max-width: 100%;
   margin: 0 auto;
 }
+
 .trailer-container iframe {
   position: absolute;
   top: 0;
@@ -148,20 +168,24 @@
   width: 100%;
   height: 100%;
 }
+
 .recommendations-section {
   margin-top: 50px;
   text-align: left;
 }
+
 .recommendations-section h2 {
   font-size: 2rem;
   color: #3498db;
   margin-bottom: 20px;
 }
+
 .recommendations-container {
   display: flex;
   gap: 20px;
   justify-content: center;
 }
+
 .recommendation-card {
   background: #ffffff;
   border: 1px solid #e0e0e0;
@@ -172,9 +196,11 @@
   text-align: center;
   transition: transform 0.2s ease-in-out;
 }
+
 .recommendation-card:hover {
   transform: translateY(-5px);
 }
+
 .recommendation-card img {
   width: 100%;
   height: 200px;
@@ -182,16 +208,19 @@
   border-radius: 4px;
   margin-bottom: 10px;
 }
+
 .recommendation-card h3 {
   font-size: 1.3rem;
   color: #3498db;
   margin: 10px 0;
 }
+
 .recommendation-card .price {
   font-size: 1.1rem;
   color: #2980b9;
   margin: 8px 0;
 }
+
 .details-btn {
   display: inline-block;
   padding: 8px 16px;
@@ -202,45 +231,54 @@
   transition: background-color 0.2s;
   margin-top: 15px;
 }
+
 .details-btn:hover {
   background-color: #2980b9;
 }
+
 .comments-section {
   margin-top: 50px;
   text-align: left;
 }
+
 .comments-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
+
 .comments-header h2 {
   font-size: 2rem;
   color: #3498db;
   margin: 0;
 }
+
 .sort-options {
   display: flex;
   align-items: center;
   gap: 5px;
 }
+
 .sort-options label {
   font-size: 1rem;
   color: #333;
 }
+
 .sort-options select {
   padding: 5px 10px;
   font-size: 1rem;
   border-radius: 4px;
   border: 1px solid #ccc;
 }
+
 .new-comment {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-bottom: 20px;
 }
+
 .new-comment textarea {
   width: 100%;
   height: 100px;
@@ -250,6 +288,7 @@
   border-radius: 4px;
   resize: vertical;
 }
+
 .new-comment button {
   align-self: flex-end;
   padding: 8px 16px;
@@ -260,20 +299,24 @@
   cursor: pointer;
   transition: background-color 0.2s;
 }
+
 .new-comment button:hover {
   background-color: #2980b9;
 }
+
 .comments-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
+
 .comment-card {
   border: 1px solid #e0e0e0;
   padding: 15px;
   border-radius: 4px;
   background-color: #fafafa;
 }
+
 .comment-header {
   display: flex;
   justify-content: space-between;
@@ -281,15 +324,18 @@
   margin-bottom: 10px;
   color: #333;
 }
+
 .comment-text {
   font-size: 1rem;
   color: #555;
 }
+
 .comment-actions {
   margin-top: 10px;
   display: flex;
   gap: 10px;
 }
+
 .comment-actions button {
   padding: 5px 10px;
   font-size: 0.9rem;
@@ -300,9 +346,11 @@
   color: #fff;
   transition: background-color 0.2s;
 }
+
 .comment-actions button:hover {
   background-color: #2980b9;
 }
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

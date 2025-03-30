@@ -6,7 +6,7 @@
 }
 
 .wishlist-container {
-  max-width: 1200px; /* Increased container width to better accommodate 4 items per row */
+  max-width: 1200px; /* Increased container width */
   margin: 20px auto;
   padding: 20px;
   background-color: #ffffff;
@@ -33,7 +33,7 @@
   margin-top: 20px;
 }
 
-/* Updated Wishlist Card Styling using Product Card values */
+/* Wishlist Card Styling using Product Card values */
 .wishlist-card {
   background: #ffffff;
   border: 1px solid #e0e0e0;
@@ -62,58 +62,59 @@
   margin: 10px 0;
 }
 
+/* Remove default underline for title link */
+.title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.title-link:hover {
+  text-decoration: underline;
+}
+
 .wishlist-card .price {
   font-size: 1.1rem;
   color: #2980b9;
   margin: 8px 0;
 }
 
-/* Button Group Container to align buttons uniformly */
+/* Button Group Container: vertically stack buttons, center aligned */
 .button-group {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
   margin-top: 15px;
 }
 
-/* Buttons styling */
-.details-btn,
-.remove-btn,
-.add-to-cart-btn {
+/* Scoped Buttons styling for Wishlist Page only */
+.wishlist-page .button-group .remove-btn,
+.wishlist-page .button-group .add-to-cart-btn {
   padding: 8px 16px !important;
   border-radius: 4px !important;
   font-size: 1rem !important;
   cursor: pointer;
   text-align: center;
-  width: 100%;
+  width: 100% !important;
   border: none;
   transition: background-color 0.2s;
   text-decoration: none;
 }
 
-/* View Details button styling */
-.details-btn {
-  background-color: #3498db;
-  color: #fff;
-}
-.details-btn:hover {
-  background-color: #2980b9;
-}
-
 /* Remove from Wishlist button styling */
-.remove-btn {
+.wishlist-page .button-group .remove-btn {
   background-color: #e74c3c;
   color: #fff;
 }
-.remove-btn:hover {
+.wishlist-page .button-group .remove-btn:hover {
   background-color: #c0392b;
 }
 
 /* Add to Cart button styling with green color */
-.add-to-cart-btn {
-  background-color: #27ae60 !important;
+.wishlist-page .button-group .add-to-cart-btn {
+  background-color: #27ae60;
   color: #fff;
 }
-.add-to-cart-btn:hover {
-  background-color: #1e8449 !important;
+.wishlist-page .button-group .add-to-cart-btn:hover {
+  background-color: #1e8449;
 }
