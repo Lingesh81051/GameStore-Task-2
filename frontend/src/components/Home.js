@@ -88,7 +88,11 @@ function Carousel({ title, filterTag, products }) {
                 />
                 <h3>{product.name}</h3>
                 <p className="price">${product.price}</p>
-                <Link to={`/product/${product._id}`} className="details-btn">
+                <Link 
+                  to={`/product/${product._id}`} 
+                  className="details-btn"
+                  onClick={() => window.scrollTo(0, 0)}
+                >
                   View Details
                 </Link>
               </div>
