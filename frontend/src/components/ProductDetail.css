@@ -92,7 +92,7 @@
   margin: 5px 0;
 }
 
-/* CTA Buttons Container aligned to the left */
+/* CTA Buttons */
 .cta-buttons {
   margin-top: 20px;
   display: flex;
@@ -100,7 +100,22 @@
   gap: 10px;
 }
 
-/* Smaller CTA buttons for ProductDetail page */
+.remove-from-wishlist-btn {
+  background-color:red;
+  color: #FFFFFF;
+  padding: 8px 16px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.remove-from-wishlist-btn:hover {
+  background-color:rgb(187, 68, 68);
+  color: #FFFFFF;
+}
+
 .add-to-wishlist-btn,
 .add-to-cart-btn {
   padding: 8px 16px;
@@ -234,7 +249,7 @@
   background-color: #2980b9;
 }
 
-/* Enhanced Comment Section Styles */
+/* Dedicated Comment Section Styles */
 .comments-section {
   margin-top: 50px;
   text-align: left;
@@ -273,6 +288,7 @@
   border: 1px solid #ccc;
 }
 
+/* New comment area */
 .new-comment {
   display: flex;
   flex-direction: column;
@@ -305,6 +321,7 @@
   background-color: #2980b9;
 }
 
+/* Comment card styles */
 .comments-list {
   display: flex;
   flex-direction: column;
@@ -333,6 +350,7 @@
   margin: 10px 0;
 }
 
+/* Comment action buttons styled as blue buttons (except Like and Delete) */
 .comment-actions {
   margin-top: 10px;
   display: flex;
@@ -341,20 +359,54 @@
 
 .comment-actions button {
   padding: 5px 10px;
-  font-size: 0.9rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: #3498db;
-  color: #fff;
+  font-size: 0.9rem;
   transition: background-color 0.2s;
 }
 
-.comment-actions button:hover {
+.like-btn {
+  background-color: green;
+  color: #fff;
+}
+
+.like-btn:hover {
+  background-color: rgb(76, 155, 76);
+}
+
+.delete-btn {
+  background-color: red;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background-color: rgb(227, 70, 70);
+}
+
+/* Modify button toggles between Modify and Save, both styled as blue buttons */
+.modify-btn,
+.save-btn {
+  background-color: #3498db;
+  color: #fff;
+}
+
+.modify-btn:hover,
+.save-btn:hover {
   background-color: #2980b9;
 }
 
-/* Styles for replies */
+/* Reply button styled as blue button */
+.reply-btn {
+  background-color: #4812bd;
+  color: #fff;
+}
+
+.reply-btn:hover {
+  background-color: #7550c3;
+}
+
+/* Replies container */
 .replies {
   margin-top: 15px;
   padding-left: 15px;
@@ -377,6 +429,58 @@
   font-size: 0.9rem;
   color: #555;
   margin: 0;
+}
+
+/* Reply action buttons styled as blue buttons */
+.reply-actions {
+  margin-top: 5px;
+  display: flex;
+  gap: 10px;
+}
+
+.reply-actions button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #3498db;
+  color: #fff;
+  font-size: 0.8rem;
+  transition: background-color 0.2s;
+}
+
+.reply-actions button:hover {
+  background-color: #2980b9;
+}
+
+/* Reply section for entering a reply */
+.reply-section {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reply-section textarea {
+  width: 100%;
+  min-height: 50px;
+  resize: vertical;
+}
+
+/* Reply section action buttons (Post Reply & Cancel Reply) styled as blue buttons */
+.reply-section button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #3498db;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.reply-section button:hover {
+  background-color: #2980b9;
 }
 
 @keyframes fadeIn {

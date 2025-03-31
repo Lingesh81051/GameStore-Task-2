@@ -19,8 +19,9 @@ function ProductDetail() {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [sortOrder, setSortOrder] = useState("mostRecent");
+  const [likedComments, setLikedComments] = useState([]); // to track comment likes
 
-  // Determine current user from localStorage (assumes "user" key exists as JSON string with a "name" field)
+  // Determine current user from localStorage (expects "user" key as JSON string with a "name" field)
   const currentUser = localStorage.getItem('user')
     ? JSON.parse(localStorage.getItem('user'))
     : null;
@@ -77,7 +78,7 @@ function ProductDetail() {
     fetchSimilar();
   }, [product]);
 
-  // Fetch cart items to set the initial cart state.
+  // Fetch cart items to set initial cart state
   useEffect(() => {
     async function fetchCart() {
       if (isLoggedIn() && product) {
@@ -217,7 +218,6 @@ function ProductDetail() {
   const handleAddComment = async () => {
     if (!requireAuth()) return;
     if (!newComment.trim()) return;
-    // Use currentUser.name for display if available
     const name = currentUser?.name || "Anonymous";
     const commentData = {
       user: name,
@@ -243,26 +243,33 @@ function ProductDetail() {
     }
   };
 
-  // Handler for liking a comment
+  // Handler for liking a comment (only one like per comment per user)
   const handleLikeComment = async (commentId) => {
     if (!requireAuth()) return;
+    if (likedComments.includes(commentId)) {
+      alert("You've already liked this comment");
+      return;
+    }
     try {
       await axios.post(`/api/products/${id}/comments/${commentId}/like`, {}, getAuthConfig());
+      setLikedComments(prev => [...prev, commentId]);
       fetchComments();
     } catch (error) {
       console.error("Error liking comment:", error);
     }
   };
 
-  // Handler for starting comment modification (only for comment author)
+  // Handler for toggling modification of a comment
   const handleModifyComment = (commentId) => {
     if (!requireAuth()) return;
     setComments(prev =>
-      prev.map(c => c.id === commentId ? { ...c, isEditing: true, editText: c.text } : c)
+      prev.map(c =>
+        c.id === commentId ? { ...c, isEditing: true, editText: c.text } : c
+      )
     );
   };
 
-  // Handler for saving modified comment
+  // Handler for saving a modified comment
   const handleSaveModifiedComment = async (commentId) => {
     const commentToUpdate = comments.find(c => c.id === commentId);
     if (!commentToUpdate) return;
@@ -285,17 +292,61 @@ function ProductDetail() {
     );
   };
 
-  // Handler for replying to a comment
-  const handleReply = async (commentId, replyText) => {
+  // Handler for toggling reply mode for a comment
+  const toggleReplyMode = (commentId) => {
+    setComments(prev =>
+      prev.map(c =>
+        c.id === commentId ? { ...c, isReplying: !c.isReplying, replyText: "" } : c
+      )
+    );
+  };
+
+  // Handler for updating reply text for a comment
+  const handleReplyChange = (commentId, value) => {
+    setComments(prev =>
+      prev.map(c => c.id === commentId ? { ...c, replyText: value } : c)
+    );
+  };
+
+  // Handler for posting a reply
+  const handlePostReply = async (commentId) => {
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment || !comment.replyText.trim()) return;
     if (!requireAuth()) return;
-    if (!replyText.trim()) return;
     const name = currentUser?.name || "Anonymous";
-    const replyData = { user: name, text: replyText };
+    const replyData = { user: name, text: comment.replyText };
     try {
       await axios.post(`/api/products/${id}/comments/${commentId}/reply`, replyData, getAuthConfig());
       fetchComments();
     } catch (error) {
       console.error("Error replying to comment:", error);
+    }
+  };
+
+  // --- Reply Actions for replies (only for reply author) ---
+  const handleDeleteReply = async (commentId, replyId) => {
+    if (!requireAuth()) return;
+    try {
+      await axios.delete(`/api/products/${id}/comments/${commentId}/reply/${replyId}`, getAuthConfig());
+      fetchComments();
+    } catch (error) {
+      console.error("Error deleting reply:", error);
+    }
+  };
+
+  const handleModifyReply = async (commentId, replyId) => {
+    if (!requireAuth()) return;
+    const newReplyText = prompt("Enter new reply text:");
+    if (!newReplyText) return;
+    try {
+      await axios.put(
+        `/api/products/${id}/comments/${commentId}/reply/${replyId}`,
+        { text: newReplyText },
+        getAuthConfig()
+      );
+      fetchComments();
+    } catch (error) {
+      console.error("Error modifying reply:", error);
     }
   };
 
@@ -470,34 +521,48 @@ function ProductDetail() {
                     value={comment.editText || comment.text}
                     onChange={(e) => handleEditChange(comment.id, e.target.value)}
                   ></textarea>
-                  <button onClick={() => handleSaveModifiedComment(comment.id)}>Save</button>
                 </>
               ) : (
                 <p className="comment-text">{comment.text}</p>
               )}
               {isLoggedIn() && (
                 <div className="comment-actions">
-                  <button onClick={() => handleLikeComment(comment.id)}>
+                  <button className="like-btn" onClick={() => handleLikeComment(comment.id)}>
                     Like ({comment.likes})
                   </button>
                   {currentUser && currentUser.name === comment.user && (
                     <>
-                      <button onClick={() => handleDeleteComment(comment.id)}>
+                      <button className="delete-btn" onClick={() => handleDeleteComment(comment.id)}>
                         Delete
                       </button>
-                      <button onClick={() => handleModifyComment(comment.id)}>
-                        Modify
+                      <button
+                        className="modify-btn"
+                        onClick={() =>
+                          comment.isEditing
+                            ? handleSaveModifiedComment(comment.id)
+                            : handleModifyComment(comment.id)
+                        }
+                      >
+                        {comment.isEditing ? "Save" : "Modify"}
                       </button>
                     </>
                   )}
-                  <button onClick={() => {
-                    const reply = prompt("Enter your reply:");
-                    if (reply) {
-                      handleReply(comment.id, reply);
-                    }
-                  }}>
-                    Reply
+                  <button className="reply-btn" onClick={() => toggleReplyMode(comment.id)}>
+                    {comment.isReplying ? "Cancel Reply" : "Reply"}
                   </button>
+                </div>
+              )}
+              {comment.isReplying && (
+                <div className="reply-section" style={{ marginTop: '10px' }}>
+                  <textarea
+                    value={comment.replyText || ""}
+                    onChange={(e) => handleReplyChange(comment.id, e.target.value)}
+                    placeholder="Type your reply here..."
+                  ></textarea>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button className="reply-btn" onClick={() => handlePostReply(comment.id)}>Post Reply</button>
+                    <button className="reply-btn" onClick={() => toggleReplyMode(comment.id)}>Cancel Reply</button>
+                  </div>
                 </div>
               )}
               {comment.replies && comment.replies.length > 0 && (
@@ -509,6 +574,20 @@ function ProductDetail() {
                         <span className="reply-timestamp">{new Date(reply.timestamp).toLocaleString()}</span>
                       </div>
                       <p className="reply-text">{reply.text}</p>
+                      {isLoggedIn() && currentUser && currentUser.name === reply.user && (
+                        <div className="reply-actions">
+                          <button className="reply-action-btn" onClick={() => {
+                            if (window.confirm("Delete this reply?")) {
+                              handleDeleteReply(comment.id, reply.id);
+                            }
+                          }}>
+                            Delete
+                          </button>
+                          <button className="reply-action-btn" onClick={() => handleModifyReply(comment.id, reply.id)}>
+                            Modify
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
