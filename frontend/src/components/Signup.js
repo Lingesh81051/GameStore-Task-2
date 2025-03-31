@@ -19,10 +19,13 @@ function Signup() {
       return;
     }
     try {
-      const { data } = await axios.post('/api/auth/register', { name, email, password });
-      // Save the token (you can also use context or Redux)
-      localStorage.setItem('token', data.token);
-      navigate('/');
+      await axios.post('/api/auth/register', { name, email, password });
+      // Show a notification prompting the user to log in
+      setMessage("Registration successful! Please log in with your credentials.");
+      // Redirect to login page after a short delay (e.g., 3 seconds)
+      setTimeout(() => {
+        navigate('/login');
+      }, 4000);
     } catch (error) {
       setMessage(error.response?.data?.message || "Signup failed");
       console.error("Signup error:", error);
