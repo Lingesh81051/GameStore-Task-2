@@ -21,7 +21,7 @@ function ProductDetail() {
   const [sortOrder, setSortOrder] = useState("mostRecent");
   const [likedComments, setLikedComments] = useState([]); // to track comment likes
 
-  // Determine current user from localStorage (expects "user" key as JSON string with a "name" field)
+  // Determine current user from localStorage (expects a "user" key as a JSON string with a "name" field)
   const currentUser = localStorage.getItem('user')
     ? JSON.parse(localStorage.getItem('user'))
     : null;
@@ -78,7 +78,7 @@ function ProductDetail() {
     fetchSimilar();
   }, [product]);
 
-  // Fetch cart items to set initial cart state
+  // Fetch cart items to set the initial cart state.
   useEffect(() => {
     async function fetchCart() {
       if (isLoggedIn() && product) {
@@ -259,17 +259,19 @@ function ProductDetail() {
     }
   };
 
-  // Handler for toggling modification of a comment
+  // Handler for entering edit mode for a comment (only for comment author)
   const handleModifyComment = (commentId) => {
     if (!requireAuth()) return;
     setComments(prev =>
       prev.map(c =>
-        c.id === commentId ? { ...c, isEditing: true, editText: c.text } : c
+        c.id === commentId
+          ? { ...c, isEditing: true, editText: c.text }  // initialize editText only once
+          : c
       )
     );
   };
 
-  // Handler for saving a modified comment
+  // Handler for saving a modified comment – update only the specific comment in state
   const handleSaveModifiedComment = async (commentId) => {
     const commentToUpdate = comments.find(c => c.id === commentId);
     if (!commentToUpdate) return;
@@ -279,7 +281,14 @@ function ProductDetail() {
         { text: commentToUpdate.editText },
         getAuthConfig()
       );
-      fetchComments();
+      // Update just the modified comment locally
+      setComments(prev =>
+        prev.map(c =>
+          c.id === commentId
+            ? { ...c, text: commentToUpdate.editText, isEditing: false }
+            : c
+        )
+      );
     } catch (error) {
       console.error("Error saving modified comment:", error);
     }
@@ -304,7 +313,9 @@ function ProductDetail() {
   // Handler for updating reply text for a comment
   const handleReplyChange = (commentId, value) => {
     setComments(prev =>
-      prev.map(c => c.id === commentId ? { ...c, replyText: value } : c)
+      prev.map(c =>
+        c.id === commentId ? { ...c, replyText: value } : c
+      )
     );
   };
 
@@ -324,6 +335,8 @@ function ProductDetail() {
   };
 
   // --- Reply Actions for replies (only for reply author) ---
+
+  // Handler for deleting a reply without confirmation
   const handleDeleteReply = async (commentId, replyId) => {
     if (!requireAuth()) return;
     try {
@@ -334,19 +347,52 @@ function ProductDetail() {
     }
   };
 
-  const handleModifyReply = async (commentId, replyId) => {
-    if (!requireAuth()) return;
-    const newReplyText = prompt("Enter new reply text:");
-    if (!newReplyText) return;
+  // Handler for toggling reply editing (inline modification)
+  const toggleReplyEditing = (commentId, replyId) => {
+    setComments(prev =>
+      prev.map(c => {
+        if (c.id === commentId) {
+          return {
+            ...c,
+            replies: c.replies.map(r =>
+              r.id === replyId
+                ? { ...r, isEditing: true, editText: r.text }  // initialize once
+                : r
+            )
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  // Handler for saving the modified reply – update only the specific reply in state
+  const handleSaveModifiedReply = async (commentId, replyId) => {
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment) return;
+    const replyToUpdate = comment.replies.find(r => r.id === replyId);
+    if (!replyToUpdate) return;
     try {
       await axios.put(
         `/api/products/${id}/comments/${commentId}/reply/${replyId}`,
-        { text: newReplyText },
+        { text: replyToUpdate.editText },
         getAuthConfig()
       );
-      fetchComments();
+      setComments(prev =>
+        prev.map(c => {
+          if (c.id === commentId) {
+            return {
+              ...c,
+              replies: c.replies.map(r =>
+                r.id === replyId ? { ...r, text: replyToUpdate.editText, isEditing: false } : r
+              )
+            };
+          }
+          return c;
+        })
+      );
     } catch (error) {
-      console.error("Error modifying reply:", error);
+      console.error("Error saving modified reply:", error);
     }
   };
 
@@ -516,12 +562,10 @@ function ProductDetail() {
                 <span className="comment-timestamp">{new Date(comment.timestamp).toLocaleString()}</span>
               </div>
               {comment.isEditing ? (
-                <>
-                  <textarea
-                    value={comment.editText || comment.text}
-                    onChange={(e) => handleEditChange(comment.id, e.target.value)}
-                  ></textarea>
-                </>
+                <textarea
+                  value={comment.editText}
+                  onChange={(e) => handleEditChange(comment.id, e.target.value)}
+                ></textarea>
               ) : (
                 <p className="comment-text">{comment.text}</p>
               )}
@@ -535,16 +579,15 @@ function ProductDetail() {
                       <button className="delete-btn" onClick={() => handleDeleteComment(comment.id)}>
                         Delete
                       </button>
-                      <button
-                        className="modify-btn"
-                        onClick={() =>
-                          comment.isEditing
-                            ? handleSaveModifiedComment(comment.id)
-                            : handleModifyComment(comment.id)
-                        }
-                      >
-                        {comment.isEditing ? "Save" : "Modify"}
-                      </button>
+                      {comment.isEditing ? (
+                        <button className="modify-btn" onClick={() => handleSaveModifiedComment(comment.id)}>
+                          Save
+                        </button>
+                      ) : (
+                        <button className="modify-btn" onClick={() => handleModifyComment(comment.id)}>
+                          Modify
+                        </button>
+                      )}
                     </>
                   )}
                   <button className="reply-btn" onClick={() => toggleReplyMode(comment.id)}>
@@ -560,8 +603,12 @@ function ProductDetail() {
                     placeholder="Type your reply here..."
                   ></textarea>
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button className="reply-btn" onClick={() => handlePostReply(comment.id)}>Post Reply</button>
-                    <button className="reply-btn" onClick={() => toggleReplyMode(comment.id)}>Cancel Reply</button>
+                    <button className="reply-btn" onClick={() => handlePostReply(comment.id)}>
+                      Post Reply
+                    </button>
+                    <button className="reply-cancel-btn" onClick={() => toggleReplyMode(comment.id)}>
+                      Cancel Reply
+                    </button>
                   </div>
                 </div>
               )}
@@ -573,19 +620,42 @@ function ProductDetail() {
                         <span className="reply-user">{reply.user}</span>
                         <span className="reply-timestamp">{new Date(reply.timestamp).toLocaleString()}</span>
                       </div>
-                      <p className="reply-text">{reply.text}</p>
+                      {reply.isEditing ? (
+                        <textarea
+                          value={reply.editText}
+                          onChange={(e) => {
+                            setComments(prev => 
+                              prev.map(c => {
+                                if(c.id === comment.id) {
+                                  return {
+                                    ...c,
+                                    replies: c.replies.map(r => 
+                                      r.id === reply.id ? { ...r, editText: e.target.value } : r
+                                    )
+                                  };
+                                }
+                                return c;
+                              })
+                            );
+                          }}
+                        ></textarea>
+                      ) : (
+                        <p className="reply-text">{reply.text}</p>
+                      )}
                       {isLoggedIn() && currentUser && currentUser.name === reply.user && (
                         <div className="reply-actions">
-                          <button className="reply-action-btn" onClick={() => {
-                            if (window.confirm("Delete this reply?")) {
-                              handleDeleteReply(comment.id, reply.id);
-                            }
-                          }}>
+                          <button className="reply-action-delete-btn" onClick={() => handleDeleteReply(comment.id, reply.id)}>
                             Delete
                           </button>
-                          <button className="reply-action-btn" onClick={() => handleModifyReply(comment.id, reply.id)}>
-                            Modify
-                          </button>
+                          {reply.isEditing ? (
+                            <button className="reply-action-save-btn" onClick={() => handleSaveModifiedReply(comment.id, reply.id)}>
+                              Save
+                            </button>
+                          ) : (
+                            <button className="reply-action-modify-btn" onClick={() => toggleReplyEditing(comment.id, reply.id)}>
+                              Modify
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

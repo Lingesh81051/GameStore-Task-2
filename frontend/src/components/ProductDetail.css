@@ -406,6 +406,23 @@
   background-color: #7550c3;
 }
 
+
+/* sub reply post and delete options */
+.reply-cancel-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: red;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.reply-cancel-btn:hover {
+  background-color: rgb(227, 70, 70);
+}
+
 /* Replies container */
 .replies {
   margin-top: 15px;
@@ -468,19 +485,81 @@
 }
 
 /* Reply section action buttons (Post Reply & Cancel Reply) styled as blue buttons */
-.reply-section button {
+.post-reply-btn {
   padding: 5px 10px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: #3498db;
+  background-color: #4812bd;
   color: #fff;
   font-size: 0.9rem;
   transition: background-color 0.2s;
 }
 
-.reply-section button:hover {
-  background-color: #2980b9;
+.post-reply-btn:hover {
+  background-color: #7550c3;
+}
+
+.cancel-reply-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: red;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.cancel-reply-btn:hover {
+  background-color: rgb(227, 70, 70);
+}
+
+
+/* Reply sections's delete and modify(already using previous css class but changed) buttons */
+.reply-action-delete-btn {
+  padding: 5px 10px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  background-color: red !important;
+  color: #fff !important;
+  font-size: 0.9rem !important;
+  transition: background-color 0.2s !important;
+}
+
+.reply-action-delete-btn:hover {
+  background-color: rgb(227, 70, 70) !important;
+}
+
+.reply-action-save-btn {
+  padding: 5px 10px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  background-color: #3498db !important;
+  color: #fff !important;
+  font-size: 0.9rem !important;
+  transition: background-color 0.2s !important;
+}
+
+.reply-action-save-btn:hover {
+  background-color: #2980b9 !important;
+}
+
+.reply-action-modify-btn {
+  padding: 5px 10px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  background-color: #3498db !important;
+  color: #fff !important;
+  font-size: 0.9rem !important;
+  transition: background-color 0.2s !important;
+}
+
+.reply-action-modify-btn:hover {
+  background-color: #2980b9 !important;
 }
 
 @keyframes fadeIn {

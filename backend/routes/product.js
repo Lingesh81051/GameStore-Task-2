@@ -62,7 +62,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-
 // ---------- Comment Endpoints ----------
 
 // GET all comments for a product
@@ -186,6 +185,45 @@ router.post('/:id/comments/:commentId/reply', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// PUT update a reply
+router.put('/:id/comments/:commentId/reply/:replyId', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    const comment = product.comments.find(comment => comment.id === req.params.commentId);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+    const reply = comment.replies.find(reply => reply.id === req.params.replyId);
+    if (!reply) return res.status(404).json({ message: 'Reply not found' });
+
+    reply.text = req.body.text;
+    await product.save();
+
+    res.json({ message: 'Reply updated', reply });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// DELETE a reply
+router.delete('/:id/comments/:commentId/reply/:replyId', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    const comment = product.comments.find(comment => comment.id === req.params.commentId);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+    comment.replies = comment.replies.filter(reply => reply.id !== req.params.replyId);
+    await product.save();
+
+    res.json({ message: 'Reply deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
