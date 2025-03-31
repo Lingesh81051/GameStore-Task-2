@@ -87,7 +87,7 @@
   z-index: 100;
   min-width: 150px;
   opacity: 0;
-  transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.5s ease-in-out;  /* Increased transition duration */
 }
 .dropdown-menu a {
   display: block;
@@ -99,7 +99,9 @@
 .dropdown-menu a:hover {
   background-color: #f0f4f8;
 }
-.dropdown:hover .dropdown-menu {
+/* Keep the dropdown visible when hovering over either the trigger or the menu */
+.dropdown:hover .dropdown-menu,
+.dropdown-menu:hover {
   display: block;
   opacity: 1;
 }
