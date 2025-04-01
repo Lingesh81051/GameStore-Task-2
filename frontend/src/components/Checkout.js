@@ -105,7 +105,24 @@ function Checkout() {
     return true;
   };
 
-  const handleCheckout = (e) => {
+  // After successful order creation, clear cart items and add each game to the user's library.
+  const clearCartAndAddToLibrary = async () => {
+    const config = getAuthConfig();
+    try {
+      // Clear cart: iterate over cartItems and send DELETE for each.
+      await Promise.all(cartItems.map(item => 
+        axios.delete(`/api/user/cart/${item.product._id}`, config)
+      ));
+      // Add each purchased game to the user's library
+      await Promise.all(cartItems.map(item =>
+        axios.post('/api/user/library', { productId: item.product._id }, config)
+      ));
+    } catch (error) {
+      console.error("Error updating library and clearing cart:", error);
+    }
+  };
+
+  const handleCheckout = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -141,16 +158,32 @@ function Checkout() {
         cvv: billingInfo.cvv
       }
     };
+
     console.log('Checkout process initiated', orderData);
-    // Here you would typically send orderData to your backend API.
-    alert('Checkout complete! Thank you for your purchase.');
+    try {
+      // Send the order data to the backend to be saved in the orders collection
+      await axios.post('/api/orders', orderData, getAuthConfig());
+      // After order is saved, clear the cart and add purchased games to the library
+      await clearCartAndAddToLibrary();
+      alert('Checkout complete! Thank you for your purchase.');
+      // Navigate to the library page where the user can install their games
+      navigate('/library');
+    } catch (error) {
+      console.error("Error saving order:", error.response ? error.response.data : error);
+      setErrorMessage('An error occurred while processing your order. Please try again.');
+    }
   };
 
   return (
     <div className="checkout-container">
       {/* Back Icon/Button */}
-      <div className="back-button" onClick={() => navigate('/cart')} style={{ cursor: 'pointer', marginBottom: '1rem' }}>
-        <span className="back-icon" aria-label="back">&#8592;</span> Back to Cart
+      <div
+        className="back-button"
+        onClick={() => navigate('/cart')}
+        style={{ cursor: 'pointer', marginBottom: '1rem', color: 'blue' }}
+      >
+        <span className="back-icon" aria-label="back" style={{ marginRight: '0.5rem' }}>&#8592;</span> 
+        Back to Cart
       </div>
       <div className="py-5 text-center">
         <h1>Checkout Form</h1>
@@ -159,7 +192,7 @@ function Checkout() {
         {/* Order Summary Section */}
         <div className="col-md-4 order-2 cart-section">
           <h4 className="d-flex justify-content-between align-items-center mb-3">
-            <span className="text-muted">Your Cart</span>
+            <span className="your-cart-title">Your Cart</span>
             <span className="badge rounded-pill bg-secondary">{cartItems.length}</span>
           </h4>
           <ul className="list-group mb-3">
@@ -197,7 +230,7 @@ function Checkout() {
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
               />
-              <button type="submit" className="Redeem-btn-secondary">
+              <button type="submit" className="btn btn-secondary">
                 Redeem
               </button>
             </div>
@@ -313,9 +346,8 @@ function Checkout() {
                   required
                 >
                   <option value="">Choose...</option>
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>Other</option>
+                  <option>India</option>
+                  <option>Others</option>
                 </select>
               </div>
               <div className="col-md-4">
@@ -331,9 +363,19 @@ function Checkout() {
                   required
                 >
                   <option value="">Choose...</option>
-                  <option>California</option>
-                  <option>Texas</option>
-                  <option>New York</option>
+                  <option>Andhra Pradesh</option>
+                  <option>Arunachal Pradesh</option>
+                  <option>Assam</option>
+                  <option>Bihar</option>
+                  <option>Karnataka</option>
+                  <option>Kerala</option>
+                  <option>Maharashtra</option>
+                  <option>Rajasthan</option>
+                  <option>Sikkim</option>
+                  <option>Tamil Nadu</option>
+                  <option>Telangana</option>
+                  <option>West Bengal</option>
+                  <option>Others</option>
                 </select>
               </div>
               <div className="col-md-4">
@@ -455,7 +497,7 @@ function Checkout() {
                   className="form-control"
                   id="cardNumber"
                   name="cardNumber"
-                  placeholder="1234-5678-9012"
+                  placeholder="1234 5678 9012 3456"
                   value={billingInfo.cardNumber}
                   onChange={handleBillingChange}
                   required
@@ -470,7 +512,7 @@ function Checkout() {
                   className="form-control"
                   id="expiryDate"
                   name="expiryDate"
-                  placeholder=""
+                  placeholder="01/2099"
                   value={billingInfo.expiryDate}
                   onChange={handleBillingChange}
                   required
@@ -485,7 +527,7 @@ function Checkout() {
                   className="form-control"
                   id="cvv"
                   name="cvv"
-                  placeholder=""
+                  placeholder="123"
                   value={billingInfo.cvv}
                   onChange={handleBillingChange}
                   required

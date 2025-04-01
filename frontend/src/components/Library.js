@@ -1,23 +1,54 @@
-// frontend/src/components/Library.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 import PageSearchBar from './PageSearchBar';
 import './Library.css';
 
 function Library() {
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [viewMode, setViewMode] = useState('compact');
+  const [libraryItems, setLibraryItems] = useState([]);
 
-  // Dummy library items – replace with real data if available.
-  const libraryItems = [];
-
-  const handleSearch = (keyword) => {
-    setSearchKeyword(keyword);
-    console.log("Library search:", keyword);
+  // Helper function to get auth config for API calls
+  const getAuthConfig = () => {
+    const token = localStorage.getItem('token');
+    return { headers: { Authorization: `Bearer ${token}` } };
   };
 
-  const handleViewChange = (mode) => {
-    setViewMode(mode);
-    console.log("Library view mode:", mode);
+  // Fetch library data from backend when component mounts
+  useEffect(() => {
+    async function fetchLibrary() {
+      try {
+        const response = await axios.get('/api/user/library', getAuthConfig());
+        if (response.data && response.data.games) {
+          setLibraryItems(response.data.games);
+        }
+      } catch (error) {
+        console.error("Error fetching library:", error);
+      }
+    }
+    fetchLibrary();
+  }, []);
+
+  const handleSearch = (keyword) => {
+    console.log("Library search:", keyword);
+    setSearchKeyword(keyword);
+  };
+
+  // Action handlers (replace alerts with your actual functionality)
+  const handleInstall = (itemName) => {
+    alert(`Installing ${itemName}...`);
+  };
+
+  const handleUpdates = (itemName) => {
+    alert(`Checking for updates for ${itemName}...`);
+  };
+
+  const handleAchievements = (itemName) => {
+    alert(`Viewing achievements for ${itemName}...`);
+  };
+
+  const handleStorePage = (itemName) => {
+    alert(`Navigating to store page for ${itemName}...`);
   };
 
   return (
@@ -25,27 +56,48 @@ function Library() {
       <PageSearchBar
         placeholder="Search in Library..."
         onSearch={handleSearch}
-        onViewChange={handleViewChange}
       />
       <div className="library-container">
         <h1>Your Library</h1>
         {libraryItems.length === 0 ? (
-          <p>Your library is empty.</p>
+          <p className="empty-msg">Your library is empty.</p>
         ) : (
-          <div className={`library-grid ${viewMode}`}>
+          <div className="library-grid">
             {libraryItems.map(item => (
               <div key={item._id} className="library-card">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  onError={(e) => {
-                    if (e.target.src !== 'http://localhost:5000/images/placeholder.png') {
-                      e.target.onerror = null;
-                      e.target.src = 'http://localhost:5000/images/placeholder.png';
-                    }
-                  }}
-                />
-                <h3>{item.name}</h3>
+                <div className="tile-image">
+                  <img
+                    src={item.image.startsWith('/') ? `http://localhost:5000${item.image}` : item.image}
+                    alt={item.name}
+                    onError={(e) => {
+                      if (e.target.src !== 'http://localhost:5000/images/placeholder.png') {
+                        e.target.onerror = null;
+                        e.target.src = 'http://localhost:5000/images/placeholder.png';
+                      }
+                    }}
+                  />
+                </div>
+                <div className="tile-details">
+                  <h4>
+                    <Link to={`/product/${item._id}`} className="game-link">
+                      {item.name}
+                    </Link>
+                  </h4>
+                  <div className="tile-actions">
+                    <button className="action-btn install-btn" onClick={() => handleInstall(item.name)}>
+                      <i className="fas fa-download"></i> Install
+                    </button>
+                    <button className="action-btn update-btn" onClick={() => handleUpdates(item.name)}>
+                      <i className="fas fa-sync-alt"></i> Check for updates
+                    </button>
+                    <button className="action-btn achievements-btn" onClick={() => handleAchievements(item.name)}>
+                      <i className="fas fa-trophy"></i> Achievements
+                    </button>
+                    <button className="action-btn store-btn" onClick={() => handleStorePage(item.name)}>
+                      <i className="fas fa-store"></i> Go to store page
+                    </button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

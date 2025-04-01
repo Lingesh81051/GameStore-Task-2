@@ -13,8 +13,7 @@
 }
 
 /* Headers in blue */
-h1,
-h4 {
+h1,h4 {
     color: #3498db !important;
 }
 
@@ -132,4 +131,9 @@ select.form-select {
     background-color: #2980b9 !important;
   }
   
-  
+  .your-cart-title {
+    font-size: 1.5rem !important;
+    color: #3498db !important;
+
+  }
+
