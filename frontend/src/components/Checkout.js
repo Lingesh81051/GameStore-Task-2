@@ -230,7 +230,7 @@ function Checkout() {
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
               />
-              <button type="submit" className="btn btn-secondary">
+              <button type="submit" className="Redeem-btn-secondary">
                 Redeem
               </button>
             </div>

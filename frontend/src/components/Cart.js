@@ -128,13 +128,13 @@ function Cart() {
                           className="remove-tile-text"
                           onClick={() => handleRemoveFromCart(item.product._id)}
                         >
-                          Remove
+                          <i className="fas fa-trash-alt"></i> Remove
                         </span>
                         <span
                           className="move-to-wishlist-text"
                           onClick={() => handleMoveToWishlist(item.product._id)}
                         >
-                          Move to Wishlist
+                          <i className="fas fa-heart"></i> Move to Wishlist
                         </span>
                       </div>
                     </div>

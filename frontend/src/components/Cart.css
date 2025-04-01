@@ -106,6 +106,8 @@
 /* Clickable text styles with vendor prefixes (underline removed) */
 .remove-tile-text,
 .move-to-wishlist-text {
+  display: flex;
+  align-items: center;
   font-size: 1rem;
   cursor: pointer;
   -webkit-user-select: none;
@@ -121,6 +123,12 @@
 
 .move-to-wishlist-text {
   color: #3498db;
+}
+
+/* Icon styling for action buttons */
+.tile-actions i {
+  margin-right: 8px; /* Add space between the icon and text */
+  font-size: 0.9rem; /* Adjust icon size */
 }
 
 /* Cart Summary Styling */
