@@ -33,6 +33,18 @@ function Header() {
     }
   }, [dropdownOpen]);
 
+  // Trigger search on every keystroke.
+  const handleSearchChange = (e) => {
+    const newKeyword = e.target.value;
+    setKeyword(newKeyword);
+    if (newKeyword.trim()) {
+      navigate(`/?keyword=${newKeyword.trim()}`);
+    } else {
+      navigate('/');
+    }
+  };
+
+  // Fallback submission (if user presses Enter)
   const submitHandler = (e) => {
     e.preventDefault();
     if (keyword.trim()) {
@@ -77,7 +89,7 @@ function Header() {
               type="text"
               placeholder="Search games..."
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={handleSearchChange}
             />
             <button type="submit" title="Search">
               <i className="bi bi-search"></i>
