@@ -5,6 +5,16 @@ import './PageSearchBar.css';
 function PageSearchBar({ placeholder, onSearch, formStyle }) {
   const [keyword, setKeyword] = useState('');
 
+  // Call onSearch on every change
+  const handleChange = (e) => {
+    const newKeyword = e.target.value;
+    setKeyword(newKeyword);
+    if (onSearch) {
+      onSearch(newKeyword);
+    }
+  };
+
+  // Keep the form submission handler if needed
   const handleSearch = (e) => {
     e.preventDefault();
     if (onSearch) onSearch(keyword);
@@ -17,7 +27,7 @@ function PageSearchBar({ placeholder, onSearch, formStyle }) {
           type="text"
           placeholder={placeholder || 'Search...'}
           value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
+          onChange={handleChange}
         />
         <button type="submit" title="Search">
           <i className="bi bi-search"></i>

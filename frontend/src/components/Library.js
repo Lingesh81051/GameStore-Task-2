@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import PageSearchBar from './PageSearchBar';
 import './Library.css';
@@ -7,6 +7,7 @@ import './Library.css';
 function Library() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [libraryItems, setLibraryItems] = useState([]);
+  const navigate = useNavigate();
 
   // Helper function to get auth config for API calls
   const getAuthConfig = () => {
@@ -34,6 +35,11 @@ function Library() {
     setSearchKeyword(keyword);
   };
 
+  // Filter library items based on search keyword
+  const filteredLibraryItems = libraryItems.filter(item =>
+    item.name.toLowerCase().includes(searchKeyword.toLowerCase())
+  );
+
   // Action handlers (replace alerts with your actual functionality)
   const handleInstall = (itemName) => {
     alert(`Installing ${itemName}...`);
@@ -47,8 +53,9 @@ function Library() {
     alert(`Viewing achievements for ${itemName}...`);
   };
 
-  const handleStorePage = (itemName) => {
-    alert(`Navigating to store page for ${itemName}...`);
+  // Navigate to detailed view page for the game
+  const handleStorePage = (itemId) => {
+    navigate(`/product/${itemId}`);
   };
 
   return (
@@ -59,21 +66,19 @@ function Library() {
       />
       <div className="library-container">
         <h1>Your Library</h1>
-        {libraryItems.length === 0 ? (
+        {filteredLibraryItems.length === 0 ? (
           <p className="empty-msg">Your library is empty.</p>
         ) : (
           <div className="library-grid">
-            {libraryItems.map(item => (
+            {filteredLibraryItems.map(item => (
               <div key={item._id} className="library-card">
                 <div className="tile-image">
                   <img
                     src={item.image.startsWith('/') ? `http://localhost:5000${item.image}` : item.image}
                     alt={item.name}
                     onError={(e) => {
-                      if (e.target.src !== 'http://localhost:5000/images/placeholder.png') {
-                        e.target.onerror = null;
-                        e.target.src = 'http://localhost:5000/images/placeholder.png';
-                      }
+                      e.target.onerror = null;
+                      e.target.src = 'http://localhost:5000/images/placeholder.png';
                     }}
                   />
                 </div>
@@ -93,7 +98,7 @@ function Library() {
                     <button className="action-btn achievements-btn" onClick={() => handleAchievements(item.name)}>
                       <i className="fas fa-trophy"></i> Achievements
                     </button>
-                    <button className="action-btn store-btn" onClick={() => handleStorePage(item.name)}>
+                    <button className="action-btn store-btn" onClick={() => handleStorePage(item._id)}>
                       <i className="fas fa-store"></i> Go to store page
                     </button>
                   </div>

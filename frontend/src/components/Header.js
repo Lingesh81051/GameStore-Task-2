@@ -64,7 +64,7 @@ function Header() {
       <div className="header-left">
         <div className="logo">
           <Link to="/" title="GameHub Home">
-            <i className="bi bi-controller"></i> GameHub
+            <i className="bi bi-controller"></i> GameSapien
           </Link>
         </div>
       </div>
